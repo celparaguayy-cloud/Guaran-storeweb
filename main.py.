@@ -1431,3 +1431,80 @@ def inicio():
         "Fer esta prendido "
         "y esperando mensajes"
     }
+# ================= DASHBOARD =================
+
+@app.get("/api/dashboard")
+def dashboard():
+
+    try:
+
+        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE}/{TABLA_PEDIDOS}"
+
+        headers = {
+            "Authorization": f"Bearer {AIRTABLE_KEY}"
+        }
+
+        r = requests.get(
+            url,
+            headers=headers,
+            params={"maxRecords": 1000},
+            timeout=10
+        )
+
+        if r.status_code != 200:
+
+            return {
+                "error": "No se pudo leer Airtable",
+                "detalle": r.text
+            }
+
+        pedidos = r.json().get("records", [])
+
+        hoy = datetime.now(
+            timezone(timedelta(hours=-3))
+        ).strftime("%d/%m/%Y")
+
+        pedidos_hoy = 0
+
+        for registro in pedidos:
+
+            campos = registro.get("fields", {})
+
+            fecha = str(
+                campos.get("Fecha", "")
+            )
+
+            if fecha.startswith(hoy):
+
+                pedidos_hoy += 1
+
+        return {
+
+            "estado": "online",
+
+            "total_pedidos": len(pedidos),
+
+            "pedidos_hoy": pedidos_hoy,
+
+            "ultimos_pedidos": [
+
+                registro.get("fields", {})
+
+                for registro in pedidos[-10:]
+
+            ]
+
+        }
+
+    except Exception as e:
+
+        print(
+            ">>> ERROR DASHBOARD:",
+            traceback.format_exc()
+        )
+
+        return {
+
+            "error": str(e)
+
+        }
