@@ -1431,6 +1431,15 @@ def inicio():
         "Fer esta prendido "
         "y esperando mensajes"
     }
+# ================= API PARA EL PANEL WEB =================
+
+@app.get("/api/dashboard")
+def api_dashboard():
+    return {
+        "estado": "online",
+        "pedidos": resumen_ventas(),
+        "conversaciones": leer_conversaciones()
+    }
 # ================= DASHBOARD =================
 
 @app.get("/api/dashboard")
