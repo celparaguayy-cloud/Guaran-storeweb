@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guaranístore | Panel de control</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f5f7;
+            color: #222;
+        }
+
+        .header {
+            background: #6a1b9a;
+            color: white;
+            padding: 22px 18px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .container {
+            padding: 18px;
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .estado {
+            background: white;
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .estado span {
+            color: #16803c;
+            font-weight: bold;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 22px;
+            min-height: 130px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 14px rgba(0,0,0,0.15);
+        }
+
+        .card .icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+
+        .card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: #777;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>💜 Guaranístore</h1>
+        <p>Panel de control de Fer Bot 3.0</p>
+    </div>
+
+    <div class="container">
+
+        <div class="estado">
+            🤖 Estado del bot:
+            <span>● ONLINE</span>
+        </div>
+
+        <div class="grid">
+
+            <div class="card" onclick="alert('Panel de ventas próximamente')">
+                <div class="icon">📊</div>
+                <h2>Dashboard</h2>
+                <p>Ver resumen de ventas y actividad.</p>
+            </div>
+
+            <div class="card" onclick="alert('Catálogo próximamente')">
+                <div class="icon">🛍️</div>
+                <h2>Productos</h2>
+                <p>Administrar productos, precios y stock.</p>
+            </div>
+
+            <div class="card" onclick="alert('Pedidos próximamente')">
+                <div class="icon">📦</div>
+                <h2>Pedidos</h2>
+                <p>Ver y gestionar pedidos de clientes.</p>
+            </div>
+
+            <div class="card" onclick="alert('Conversaciones próximamente')">
+                <div class="icon">💬</div>
+                <h2>Conversaciones</h2>
+                <p>Revisar las charlas de los clientes.</p>
+            </div>
+
+            <div class="card" onclick="alert('Probador del bot próximamente')">
+                <div class="icon">🤖</div>
+                <h2>Probar a Fer</h2>
+                <p>Probar el bot directamente desde el panel.</p>
+            </div>
+
+            <div class="card" onclick="alert('Configuración próximamente')">
+                <div class="icon">⚙️</div>
+                <h2>Configuración</h2>
+                <p>Controlar las funciones del sistema.</p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer">
+        Guaranístore © 2026 — Fer Bot 3.0
+    </div>
+
+</body>
+</html>
