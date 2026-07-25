@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guaranístore · Fer Bot</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">G</div>
+      <div>
+        <strong>Guaranístore</strong>
+        <span>Fer Bot Control</span>
+      </div>
+    </div>
+
+    <nav>
+      <button class="nav-item active" data-view="dashboard">
+        <span>⌂</span> Resumen
+      </button>
+      <button class="nav-item" data-view="chat">
+        <span>◉</span> Chat en vivo
+      </button>
+      <button class="nav-item" data-view="audit">
+        <span>⌁</span> Auditor de Fer
+      </button>
+      <button class="nav-item" data-view="orders">
+        <span>▣</span> Pedidos
+      </button>
+      <button class="nav-item" data-view="catalog">
+        <span>◇</span> Catálogo
+      </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="bot-status">
+        <span class="status-dot"></span>
+        <div>
+          <strong>Fer Bot activo</strong>
+          <small>Funcionando normalmente</small>
+        </div>
+      </div>
+      <div class="profile">
+        <div class="avatar">FC</div>
+        <div>
+          <strong>Fernando</strong>
+          <small>Dueño</small>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">CENTRO DE CONTROL</p>
+        <h1 id="page-title">Resumen del negocio</h1>
+      </div>
+      <div class="top-actions">
+        <span class="live-pill"><span class="status-dot"></span> Sistema online</span>
+        <button class="icon-btn" title="Notificaciones">♢</button>
+        <button class="avatar top-avatar">FC</button>
+      </div>
+    </header>
+
+    <section id="dashboard-view" class="view active-view">
+      <div class="welcome-card">
+        <div>
+          <p class="eyebrow">BUENAS, FERNANDO</p>
+          <h2>Tu negocio, en una sola vista.</h2>
+          <p>Mirà qué está haciendo Fer, dónde están las oportunidades y qué conversaciones necesitan atención.</p>
+        </div>
+        <div class="welcome-orb">✦</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">Pedidos totales</span>
+          <strong id="stat-orders">0</strong>
+          <span class="stat-change positive">↑ actualizado desde Airtable</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Pedidos de hoy</span>
+          <strong id="stat-today">0</strong>
+          <span class="stat-change positive">↑ actividad reciente</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Conversaciones</span>
+          <strong id="stat-conversations">0</strong>
+          <span class="stat-change">clientes atendidos</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Estado de Fer</span>
+          <strong class="online-text">Activo</strong>
+          <span class="stat-change positive">● respondiendo</span>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <div class="panel chart-panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">ACTIVIDAD</p>
+              <h3>Pedidos recientes</h3>
+            </div>
+            <select id="chart-range">
+              <option>Últimos 7 días</option>
+              <option>Últimos 30 días</option>
+            </select>
+          </div>
+          <canvas id="ordersChart"></canvas>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">INTELIGENCIA</p>
+              <h3>Qué está pasando</h3>
+            </div>
+          </div>
+          <div class="insight-list">
+            <div class="insight">
+              <div class="insight-icon">◌</div>
+              <div>
+                <strong>Conversaciones activas</strong>
+                <p>Revisá las charlas en tiempo real para detectar oportunidades.</p>
+              </div>
+            </div>
+            <div class="insight">
+              <div class="insight-icon">↗</div>
+              <div>
+                <strong>Auditoría automática</strong>
+                <p>Encontrá dónde Fer pierde ventas o puede responder mejor.</p>
+              </div>
+            </div>
+            <div class="insight">
+              <div class="insight-icon">✓</div>
+              <div>
+                <strong>Datos reales</strong>
+                <p>Pedidos y catálogo vienen de la información real del negocio.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">ÚLTIMOS MOVIMIENTOS</p>
+            <h3>Pedidos recientes</h3>
+          </div>
+          <button class="text-btn" data-view-target="orders">Ver todos →</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Cliente</th><th>Ciudad</th><th>Producto</th><th>Estado</th><th>Fecha</th></tr>
+            </thead>
+            <tbody id="recent-orders"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="chat-view" class="view">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">OBSERVACIÓN EN TIEMPO REAL</p>
+          <h2>Chat en vivo</h2>
+          <p>Mirà cómo Fer trabaja con tus clientes sin interrumpir sus conversaciones.</p>
+        </div>
+        <span class="live-pill"><span class="status-dot"></span> Monitoreando</span>
+      </div>
+      <div class="chat-layout">
+        <div class="panel conversations-list">
+          <div class="search-box">⌕ <input id="conversation-search" placeholder="Buscar conversación..."></div>
+          <div id="conversation-list"></div>
+        </div>
+        <div class="panel chat-window">
+          <div class="chat-header">
+            <div class="avatar customer-avatar">MG</div>
+            <div>
+              <strong id="chat-customer">Seleccioná una conversación</strong>
+              <small id="chat-meta">—</small>
+            </div>
+            <span class="live-tag">EN VIVO</span>
+          </div>
+          <div id="chat-messages" class="messages">
+            <div class="empty-state">Elegí una conversación para ver cómo trabaja Fer.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="audit-view" class="view">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">MEJORA CONTINUA</p>
+          <h2>Auditor de Fer</h2>
+          <p>Detectá errores, oportunidades y puntos donde una conversación pudo terminar en venta.</p>
+        </div>
+        <button class="primary-btn" id="run-audit">Analizar conversaciones</button>
+      </div>
+      <div class="audit-grid">
+        <div class="panel score-card">
+          <p class="eyebrow">PUNTUACIÓN GENERAL</p>
+          <div class="score-ring"><span id="audit-score">—</span><small>/100</small></div>
+          <p id="audit-summary">Ejecutá un análisis para obtener una lectura del rendimiento de Fer.</p>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h3>Hallazgos</h3></div>
+          <div id="audit-findings" class="finding-list">
+            <div class="empty-state">Todavía no hay un análisis ejecutado.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="orders-view" class="view">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">VENTAS</p>
+          <h2>Pedidos</h2>
+          <p>Todos los pedidos registrados por Fer.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="search-box">⌕ <input id="order-search" placeholder="Buscar por nombre, ciudad o producto..."></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cliente</th><th>Ciudad</th><th>Teléfono</th><th>Producto</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
+            <tbody id="orders-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="catalog-view" class="view">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">PRODUCTOS</p>
+          <h2>Catálogo</h2>
+          <p>Los productos que Fer puede consultar y vender.</p>
+        </div>
+      </div>
+      <div id="catalog-grid" class="catalog-grid"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
