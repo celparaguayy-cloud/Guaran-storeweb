@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Guaranistore — Panel de Control</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #222;
+        }
+
+        header {
+            background: #6a1b9a;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        .contenedor {
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 15px;
+        }
+
+        .tarjetas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .tarjeta {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #0001;
+        }
+
+        .tarjeta h3 {
+            margin-top: 0;
+            color: #6a1b9a;
+        }
+
+        .numero {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px #0001;
+        }
+
+        button {
+            background: #6a1b9a;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        pre {
+            background: #111;
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            min-height: 100px;
+        }
+
+        @media (max-width: 600px) {
+            .contenedor {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🤖 Guaranistore</h1>
+    <p>Panel de control de Fer Bot</p>
+</header>
+
+<div class="contenedor">
+
+    <div class="tarjetas">
+
+        <div class="tarjeta">
+            <h3>Estado del Bot</h3>
+            <div class="numero" id="estado">⏳</div>
+        </div>
+
+        <div class="tarjeta">
+            <h3>Ventas Totales</h3>
+            <div class="numero" id="ventas">-</div>
+        </div>
+
+        <div class="tarjeta">
+            <h3>Ventas de Hoy</h3>
+            <div class="numero" id="ventasHoy">-</div>
+        </div>
+
+    </div>
+
+    <div class="panel">
+
+        <h2>📊 Resumen del negocio</h2>
+
+        <button onclick="cargarDatos()">
+            🔄 Actualizar datos
+        </button>
+
+        <pre id="resultado">
+Todavía no se cargaron datos.
+        </pre>
+
+    </div>
+
+</div>
+
+<script>
+
+async function cargarDatos() {
+
+    document.getElementById("resultado").textContent =
+        "Cargando datos...";
+
+    try {
+
+        const respuesta = await fetch("/api/dashboard");
+
+        const datos = await respuesta.json();
+
+        document.getElementById("estado").textContent =
+            "🟢 Online";
+
+        document.getElementById("ventas").textContent =
+            datos.total_pedidos ?? 0;
+
+        document.getElementById("ventasHoy").textContent =
+            datos.pedidos_hoy ?? 0;
+
+        document.getElementById("resultado").textContent =
+            JSON.stringify(datos, null, 2);
+
+    } catch (error) {
+
+        document.getElementById("estado").textContent =
+            "🔴 Error";
+
+        document.getElementById("resultado").textContent =
+            "No se pudieron cargar los datos.";
+
+        console.error(error);
+    }
+}
+
+cargarDatos();
+
+</script>
+
+</body>
+</html>
