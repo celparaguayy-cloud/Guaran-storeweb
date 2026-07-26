@@ -2,95 +2,107 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <title>Guaranístore · Panel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#EEF1EA; --card:#FFFFFF; --ink:#16281F; --jade:#1E6E4F;
-    --jade-d:#155038; --amber:#E8A93B; --red:#C0413A; --line:#E1E6DC;
-    --muted:#6C7A70;
+    --bg:#ECF0E8; --card:#FFFFFF; --ink:#15271E; --jade:#1E6E4F; --jade-d:#154E38;
+    --amber:#E8A93B; --amber-d:#2a1e00; --red:#C0413A; --line:#E1E6DC; --muted:#6C7A70;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    background:var(--bg); color:var(--ink);
-    font-family:"Inter",system-ui,sans-serif; -webkit-font-smoothing:antialiased;
-    line-height:1.5; padding-bottom:40px;
-  }
+  body{background:var(--bg); color:var(--ink); font-family:"Inter",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5; padding-bottom:40px}
   .wrap{max-width:560px; margin:0 auto; padding:0 16px}
-  h1,h2,.num{font-family:"Fraunces",Georgia,serif}
+  h1,h2,h3,.num,.brand,.logo,.price,.total{font-family:"Fraunces",Georgia,serif}
   .num{font-variant-numeric:tabular-nums; letter-spacing:-.01em}
+  .hidden{display:none !important}
 
-  /* ---- Login ---- */
-  #login{min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:24px; text-align:center}
-  #login .logo{font-family:"Fraunces"; font-weight:700; font-size:34px; color:var(--jade); letter-spacing:-.02em}
-  #login p{color:var(--muted); margin:8px 0 28px; font-size:15px}
-  #login input{width:100%; max-width:300px; padding:14px 16px; border:1.5px solid var(--line); border-radius:12px; font-size:16px; font-family:inherit; text-align:center}
+  /* Login */
+  #login{min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:24px; text-align:center; background:
+    radial-gradient(120% 60% at 50% 0%, #F4F7F0 0%, var(--bg) 60%)}
+  #login .logo{font-weight:700; font-size:36px; color:var(--jade); letter-spacing:-.02em}
+  #login .tag{color:var(--muted); margin:6px 0 30px; font-size:15px}
+  #login input{width:100%; max-width:300px; padding:14px 16px; border:1.5px solid var(--line); border-radius:12px; font-size:16px; font-family:inherit; text-align:center; background:#fff}
   #login input:focus{outline:none; border-color:var(--jade)}
   #login button{width:100%; max-width:300px; margin-top:12px; padding:14px; border:none; border-radius:12px; background:var(--jade); color:#fff; font-size:16px; font-weight:600; font-family:inherit; cursor:pointer}
   #login .err{color:var(--red); font-size:14px; margin-top:14px; min-height:18px}
 
-  /* ---- Header ---- */
-  header{background:var(--jade); color:#fff; padding:20px 0 16px}
+  /* Header */
+  header{background:linear-gradient(135deg,var(--jade),var(--jade-d)); color:#fff; padding:22px 0 18px}
   header .wrap{display:flex; align-items:center; justify-content:space-between}
-  .brand{font-family:"Fraunces"; font-weight:700; font-size:22px; letter-spacing:-.02em}
-  .status{display:flex; align-items:center; gap:6px; font-size:12.5px; opacity:.9}
-  .dot{width:8px; height:8px; border-radius:50%; background:var(--amber); box-shadow:0 0 0 0 rgba(232,169,59,.6); animation:pulse 2s infinite}
+  .brand{font-weight:700; font-size:23px; letter-spacing:-.02em}
+  .status{display:flex; align-items:center; gap:6px; font-size:12.5px; opacity:.92}
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--amber); animation:pulse 2s infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(232,169,59,.5)}70%{box-shadow:0 0 0 7px rgba(232,169,59,0)}100%{box-shadow:0 0 0 0 rgba(232,169,59,0)}}
 
-  /* ---- Tabs ---- */
+  /* Tabs */
   nav{position:sticky; top:0; z-index:5; background:var(--bg); border-bottom:1px solid var(--line)}
-  nav .wrap{display:flex; gap:4px; padding-top:8px; padding-bottom:8px}
-  .tab{flex:1; padding:9px 6px; border:none; background:transparent; font-family:inherit; font-size:13.5px; font-weight:600; color:var(--muted); border-radius:9px; cursor:pointer}
+  nav .wrap{display:flex; gap:3px; padding:8px 12px}
+  .tab{flex:1; padding:9px 4px; border:none; background:transparent; font-family:inherit; font-size:13px; font-weight:600; color:var(--muted); border-radius:9px; cursor:pointer; white-space:nowrap}
   .tab.on{background:var(--ink); color:#fff}
 
-  /* ---- Content ---- */
   main{padding-top:18px}
-  .stats{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px}
-  .stat{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px}
-  .stat .n{font-size:30px; font-weight:700}
-  .stat .l{font-size:12.5px; color:var(--muted); margin-top:2px}
-  .stat.hi{background:var(--jade); border-color:var(--jade); color:#fff}
-  .stat.hi .l{color:rgba(255,255,255,.85)}
 
-  .sec-h{display:flex; align-items:center; justify-content:space-between; margin:22px 2px 12px}
-  .sec-h h2{font-size:19px; font-weight:600}
-  .add{border:none; background:var(--amber); color:#2a1e00; font-family:inherit; font-weight:600; font-size:13.5px; padding:8px 14px; border-radius:10px; cursor:pointer}
+  /* Stats */
+  .stats{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .stat{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:15px 16px}
+  .stat .n{font-size:31px; font-weight:700; line-height:1}
+  .stat .l{font-size:12.5px; color:var(--muted); margin-top:5px}
+  .stat.hi{background:linear-gradient(135deg,var(--jade),var(--jade-d)); border:none; color:#fff}
+  .stat.hi .l{color:rgba(255,255,255,.85)}
+  .stat.alert{background:#FDF3DD; border-color:#F0D89A}
+  .stat.alert .n{color:#9a6a10}
+
+  .sec-h{display:flex; align-items:center; justify-content:space-between; margin:24px 2px 12px}
+  .sec-h h2{font-size:20px; font-weight:600}
+  .add{border:none; background:var(--amber); color:var(--amber-d); font-family:inherit; font-weight:600; font-size:13px; padding:9px 14px; border-radius:10px; cursor:pointer}
 
   .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:15px 16px; margin-bottom:10px}
+  .card.new{border-color:#F0D89A; box-shadow:0 0 0 3px #FDF3DD}
   .card .top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px}
   .card .who{font-weight:600; font-size:15.5px}
   .card .prod{color:var(--jade); font-size:13.5px; font-weight:500; margin-top:1px}
-  .card .meta{color:var(--muted); font-size:13px; margin-top:8px; line-height:1.55}
-  .card .total{font-family:"Fraunces"; font-weight:600; font-size:16px; white-space:nowrap}
-
-  .badge{display:inline-block; font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:20px; text-transform:capitalize}
-  .b-nuevo{background:#FDF0D6; color:#9a6a10}
-  .b-confirmado{background:#DBEBFB; color:#1d5a99}
-  .b-enviado{background:#E7E1FA; color:#5b3fa8}
-  .b-entregado{background:#D8EFE1; color:#1a6a45}
-  .b-cancelado{background:#F6DEDC; color:#a23b34}
+  .card .meta{color:var(--muted); font-size:13px; margin-top:9px; line-height:1.6}
+  .total{font-weight:600; font-size:17px; white-space:nowrap}
 
   .estado-row{display:flex; gap:6px; flex-wrap:wrap; margin-top:12px}
   .est-btn{font-size:12px; font-weight:600; padding:6px 11px; border-radius:8px; border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer}
   .est-btn.act{background:var(--jade); color:#fff; border-color:var(--jade)}
 
   .prod-card{display:flex; justify-content:space-between; align-items:center; gap:12px}
-  .prod-card .price{font-family:"Fraunces"; font-weight:600; font-size:16px}
+  .prod-card .price{font-weight:600; font-size:17px}
   .prod-card .desc{color:var(--muted); font-size:12.5px; margin-top:3px}
+  .badge{display:inline-block; font-size:11px; font-weight:600; padding:3px 9px; border-radius:20px; text-transform:capitalize}
+  .b-ok{background:#D8EFE1; color:#1a6a45}
+  .b-no{background:#F6DEDC; color:#a23b34}
 
-  .empty{text-align:center; color:var(--muted); padding:40px 20px}
+  .empty{text-align:center; color:var(--muted); padding:38px 20px}
   .empty .big{font-family:"Fraunces"; font-size:19px; color:var(--ink); margin-bottom:6px}
-  .loading{text-align:center; color:var(--muted); padding:36px; font-size:14px}
+  .loading{text-align:center; color:var(--muted); padding:34px; font-size:14px}
   .msg-err{background:#FBE7E5; color:#8a2f29; border-radius:12px; padding:12px 14px; font-size:13.5px; margin-bottom:10px}
 
-  /* ---- Modal ---- */
+  /* Fer chat */
+  #v-fer .intro{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; color:var(--muted); font-size:13.5px; margin-bottom:14px}
+  #v-fer .intro b{color:var(--ink)}
+  .chips{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px}
+  .chip{border:1px solid var(--line); background:#fff; color:var(--jade); font-family:inherit; font-weight:600; font-size:12.5px; padding:8px 12px; border-radius:20px; cursor:pointer}
+  #ferMsgs{display:flex; flex-direction:column; gap:10px; margin-bottom:14px}
+  .bub{max-width:85%; padding:11px 14px; border-radius:16px; font-size:14.5px; line-height:1.55; white-space:pre-wrap}
+  .bub.me{align-self:flex-end; background:var(--jade); color:#fff; border-bottom-right-radius:5px}
+  .bub.fer{align-self:flex-start; background:var(--card); border:1px solid var(--line); border-bottom-left-radius:5px}
+  .ferbar{display:flex; gap:8px}
+  .ferbar input{flex:1; padding:13px 14px; border:1.5px solid var(--line); border-radius:12px; font-size:15px; font-family:inherit; background:#fff}
+  .ferbar input:focus{outline:none; border-color:var(--jade)}
+  .ferbar button{border:none; background:var(--jade); color:#fff; font-family:inherit; font-weight:600; padding:0 18px; border-radius:12px; cursor:pointer}
+
+  /* Modal */
   .modal-bg{position:fixed; inset:0; background:rgba(20,30,24,.5); display:none; align-items:flex-end; z-index:20}
   .modal-bg.show{display:flex}
-  .modal{background:var(--bg); width:100%; max-width:560px; margin:0 auto; border-radius:20px 20px 0 0; padding:22px 18px 30px; max-height:90vh; overflow:auto}
-  .modal h3{font-family:"Fraunces"; font-size:20px; margin-bottom:16px}
+  .modal{background:var(--bg); width:100%; max-width:560px; margin:0 auto; border-radius:20px 20px 0 0; padding:22px 18px 30px; max-height:92vh; overflow:auto}
+  .modal h3{font-size:21px; margin-bottom:16px}
   .modal label{display:block; font-size:13px; font-weight:600; color:var(--muted); margin:12px 0 5px}
   .modal input, .modal select{width:100%; padding:12px 13px; border:1.5px solid var(--line); border-radius:11px; font-size:15px; font-family:inherit; background:#fff}
   .modal input:focus,.modal select:focus{outline:none; border-color:var(--jade)}
@@ -98,237 +110,214 @@
   .modal .actions{display:flex; gap:10px; margin-top:22px}
   .modal .save{flex:1; padding:14px; border:none; border-radius:12px; background:var(--jade); color:#fff; font-weight:600; font-size:15px; font-family:inherit; cursor:pointer}
   .modal .cancel{padding:14px 18px; border:1.5px solid var(--line); border-radius:12px; background:#fff; font-weight:600; font-family:inherit; cursor:pointer}
-  .hidden{display:none !important}
 </style>
 </head>
 <body>
 
-<!-- ============ LOGIN ============ -->
+<!-- LOGIN -->
 <div id="login">
   <div class="logo">Guaranístore</div>
-  <p>Panel del negocio</p>
+  <div class="tag">Panel del negocio</div>
   <input id="clave" type="password" placeholder="Tu clave" autocomplete="off" />
   <button id="entrar">Entrar</button>
   <div class="err" id="loginErr"></div>
 </div>
 
-<!-- ============ APP ============ -->
+<!-- APP -->
 <div id="app" class="hidden">
-  <header>
-    <div class="wrap">
-      <div class="brand">Guaranístore</div>
-      <div class="status"><span class="dot"></span> Fer atendiendo</div>
-    </div>
-  </header>
+  <header><div class="wrap">
+    <div class="brand">Guaranístore</div>
+    <div class="status"><span class="dot"></span> Fer atendiendo</div>
+  </div></header>
 
-  <nav>
-    <div class="wrap">
-      <button class="tab on" data-t="resumen">Resumen</button>
-      <button class="tab" data-t="pedidos">Pedidos</button>
-      <button class="tab" data-t="catalogo">Catálogo</button>
-    </div>
-  </nav>
+  <nav><div class="wrap">
+    <button class="tab on" data-t="resumen">Resumen</button>
+    <button class="tab" data-t="pedidos">Pedidos</button>
+    <button class="tab" data-t="catalogo">Catálogo</button>
+    <button class="tab" data-t="fer">Fer</button>
+  </div></nav>
 
   <main class="wrap">
     <section id="v-resumen"></section>
     <section id="v-pedidos" class="hidden"></section>
     <section id="v-catalogo" class="hidden"></section>
+    <section id="v-fer" class="hidden"></section>
   </main>
 </div>
 
-<!-- ============ MODAL nuevo pedido ============ -->
-<div class="modal-bg" id="modalBg">
+<!-- MODAL pedido -->
+<div class="modal-bg" id="modalPedido">
   <div class="modal">
     <h3>Cargar venta a mano</h3>
-    <div id="modalErr" class="msg-err hidden"></div>
-    <label>Producto</label>
-    <input id="f-producto" placeholder="Ej: Depiladora IPL" />
+    <div id="pErr" class="msg-err hidden"></div>
+    <label>Producto</label><input id="p-producto" placeholder="Ej: Depiladora IPL" />
     <div class="row2">
-      <div><label>Precio (Gs.)</label><input id="f-total" inputmode="numeric" placeholder="280.000" /></div>
-      <div><label>Estado</label>
-        <select id="f-estado">
-          <option>Nuevo</option><option>Confirmado</option>
-          <option>Enviado</option><option>Entregado</option>
-        </select>
-      </div>
+      <div><label>Precio (Gs.)</label><input id="p-total" inputmode="numeric" placeholder="280.000" /></div>
+      <div><label>Estado</label><select id="p-estado"><option>Nuevo</option><option>Confirmado</option><option>Enviado</option><option>Entregado</option></select></div>
     </div>
-    <label>Nombre del cliente</label>
-    <input id="f-nombre" placeholder="Nombre y apellido" />
+    <label>Nombre del cliente</label><input id="p-nombre" placeholder="Nombre y apellido" />
     <div class="row2">
-      <div><label>Ciudad</label><input id="f-ciudad" placeholder="Ciudad" /></div>
-      <div><label>Teléfono</label><input id="f-tel" inputmode="tel" placeholder="09xx xxxxxx" /></div>
+      <div><label>Ciudad</label><input id="p-ciudad" placeholder="Ciudad" /></div>
+      <div><label>Teléfono</label><input id="p-tel" inputmode="tel" placeholder="09xx xxxxxx" /></div>
     </div>
-    <label>Dirección</label>
-    <input id="f-dir" placeholder="Dirección de entrega" />
-    <div class="actions">
-      <button class="cancel" id="modalCancel">Cancelar</button>
-      <button class="save" id="modalSave">Guardar venta</button>
+    <label>Dirección</label><input id="p-dir" placeholder="Dirección de entrega" />
+    <div class="actions"><button class="cancel" data-close>Cancelar</button><button class="save" id="pSave">Guardar venta</button></div>
+  </div>
+</div>
+
+<!-- MODAL producto -->
+<div class="modal-bg" id="modalProd">
+  <div class="modal">
+    <h3>Nuevo producto</h3>
+    <div id="prErr" class="msg-err hidden"></div>
+    <label>Nombre del producto</label><input id="pr-nombre" placeholder="Ej: Depiladora IPL" />
+    <div class="row2">
+      <div><label>Precio (Gs.)</label><input id="pr-precio" inputmode="numeric" placeholder="280.000" /></div>
+      <div><label>Disponibilidad</label><select id="pr-stock"><option value="disponible">Disponible</option><option value="agotado">Agotado</option></select></div>
     </div>
+    <label>Descripción corta</label><input id="pr-desc" placeholder="Para qué sirve, en pocas palabras" />
+    <div class="actions"><button class="cancel" data-close>Cancelar</button><button class="save" id="prSave">Guardar producto</button></div>
   </div>
 </div>
 
 <script>
-// ====== CONFIG: la dirección de tu bot en Render ======
 const BACKEND = "https://guaranistorebot.onrender.com";
 let CLAVE = "";
 const ESTADOS = ["Nuevo","Confirmado","Enviado","Entregado","Cancelado"];
-
 const $ = s => document.querySelector(s);
-const gs = v => { const n = String(v||"").replace(/[^\d]/g,""); return n ? "Gs. " + Number(n).toLocaleString("es-PY") : (v||"-"); };
-const badgeClass = e => "b-" + String(e||"nuevo").toLowerCase().replace(/[^a-z]/g,"");
+const gs = v => { const n=String(v||"").replace(/[^\d]/g,""); return n ? "Gs. "+Number(n).toLocaleString("es-PY") : (v||"-"); };
 
 async function api(path, opts={}){
-  const r = await fetch(BACKEND + path, {
-    ...opts,
-    headers:{ "Content-Type":"application/json", "X-Clave": CLAVE, ...(opts.headers||{}) }
-  });
-  if(r.status === 401) throw new Error("401");
+  const r = await fetch(BACKEND+path, {...opts, headers:{"Content-Type":"application/json","X-Clave":CLAVE, ...(opts.headers||{})}});
+  if(r.status===401) throw new Error("401");
   return r.json();
 }
+function errBox(e){ if(e.message==="401"){ location.reload(); return ""; } return `<div class="msg-err">No pude traer los datos. Si el bot estaba dormido, esperá unos segundos y recargá.</div>`; }
 
-// ---- Login ----
+// Login
 $("#entrar").onclick = entrar;
-$("#clave").addEventListener("keydown", e => { if(e.key==="Enter") entrar(); });
+$("#clave").addEventListener("keydown", e=>{ if(e.key==="Enter") entrar(); });
 async function entrar(){
   CLAVE = $("#clave").value.trim();
-  $("#loginErr").textContent = "";
-  if(!CLAVE){ $("#loginErr").textContent = "Escribí tu clave"; return; }
-  $("#entrar").textContent = "Entrando…";
-  try{
-    await api("/api/panel/resumen");   // si la clave está mal, tira 401
-    $("#login").classList.add("hidden");
-    $("#app").classList.remove("hidden");
-    cargarResumen();
-  }catch(e){
-    $("#loginErr").textContent = e.message==="401" ? "Clave incorrecta" : "No pude conectar. Probá de nuevo en un momento.";
-    CLAVE = "";
-  }finally{ $("#entrar").textContent = "Entrar"; }
+  $("#loginErr").textContent="";
+  if(!CLAVE){ $("#loginErr").textContent="Escribí tu clave"; return; }
+  $("#entrar").textContent="Entrando…";
+  try{ await api("/api/panel/resumen"); $("#login").classList.add("hidden"); $("#app").classList.remove("hidden"); cargarResumen(); }
+  catch(e){ $("#loginErr").textContent = e.message==="401" ? "Clave incorrecta" : "No pude conectar. Probá de nuevo."; CLAVE=""; }
+  finally{ $("#entrar").textContent="Entrar"; }
 }
 
-// ---- Tabs ----
+// Tabs
 document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
-  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
-  t.classList.add("on");
-  ["resumen","pedidos","catalogo"].forEach(v => $("#v-"+v).classList.add("hidden"));
-  const v = t.dataset.t; $("#v-"+v).classList.remove("hidden");
-  if(v==="resumen") cargarResumen();
-  if(v==="pedidos") cargarPedidos();
-  if(v==="catalogo") cargarCatalogo();
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on")); t.classList.add("on");
+  ["resumen","pedidos","catalogo","fer"].forEach(v=>$("#v-"+v).classList.add("hidden"));
+  const v=t.dataset.t; $("#v-"+v).classList.remove("hidden");
+  if(v==="resumen") cargarResumen(); if(v==="pedidos") cargarPedidos();
+  if(v==="catalogo") cargarCatalogo(); if(v==="fer") pintarFer();
 });
 
-// ---- Resumen ----
+// Resumen
 async function cargarResumen(){
-  const el = $("#v-resumen");
-  el.innerHTML = '<div class="loading">Cargando…</div>';
+  const el=$("#v-resumen"); el.innerHTML='<div class="loading">Cargando…</div>';
   try{
     const d = await api("/api/panel/resumen");
+    const alerta = (d.nuevos||0)>0;
     el.innerHTML = `
       <div class="stats">
         <div class="stat hi"><div class="n num">${d.total||0}</div><div class="l">Ventas totales</div></div>
         <div class="stat"><div class="n num">${d.hoy||0}</div><div class="l">Ventas hoy</div></div>
-        <div class="stat"><div class="n num">${d.nuevos||0}</div><div class="l">Nuevos por despachar</div></div>
+        <div class="stat ${alerta?'alert':''}"><div class="n num">${alerta?'🔔 ':''}${d.nuevos||0}</div><div class="l">Por despachar</div></div>
         <div class="stat"><div class="n num">${d.entregados||0}</div><div class="l">Entregados</div></div>
       </div>
-      <div class="empty"><div class="big">¡Buen trabajo, Fer!</div>Cargá tus ventas en la pestaña Pedidos y las vas a ver acá.</div>`;
-  }catch(e){ el.innerHTML = errBox(e); }
+      <div class="empty"><div class="big">Tu negocio, de un vistazo</div>${alerta?'Tenés pedidos nuevos esperando — miralos en la pestaña Pedidos.':'Cargá tus ventas en Pedidos y las vas viendo acá.'}</div>`;
+  }catch(e){ el.innerHTML=errBox(e); }
 }
 
-// ---- Pedidos ----
+// Pedidos
 async function cargarPedidos(){
-  const el = $("#v-pedidos");
-  el.innerHTML = `<div class="sec-h"><h2>Pedidos</h2><button class="add" id="btnAdd">+ Cargar venta</button></div><div class="loading">Cargando…</div>`;
-  $("#btnAdd").onclick = abrirModal;
+  const el=$("#v-pedidos");
+  el.innerHTML=`<div class="sec-h"><h2>Pedidos</h2><button class="add" id="btnAddP">+ Cargar venta</button></div><div class="loading">Cargando…</div>`;
+  $("#btnAddP").onclick=()=>abrir("modalPedido");
   try{
-    const d = await api("/api/panel/pedidos");
-    const list = (d.pedidos||[]).filter(p => p.nombre || p.producto || p.total);
-    if(!list.length){
-      el.querySelector(".loading").outerHTML =
-        `<div class="empty"><div class="big">Todavía no hay pedidos</div>Cerraste tu primera venta a mano — cargala acá con “+ Cargar venta” y empezá tu historial.</div>`;
-      return;
-    }
-    el.querySelector(".loading").outerHTML = list.map(pedidoCard).join("");
-    bindEstados();
-  }catch(e){ el.querySelector(".loading").outerHTML = errBox(e); }
+    const d=await api("/api/panel/pedidos");
+    const list=(d.pedidos||[]).filter(p=>p.nombre||p.producto||p.total);
+    if(!list.length){ el.querySelector(".loading").outerHTML=`<div class="empty"><div class="big">Todavía no hay pedidos</div>Cargá tu primera venta con “+ Cargar venta” y empezá tu historial.</div>`; return; }
+    el.querySelector(".loading").outerHTML=list.map(pedidoCard).join(""); bindEstados();
+  }catch(e){ el.querySelector(".loading").outerHTML=errBox(e); }
 }
-
 function pedidoCard(p){
-  const botones = ESTADOS.map(e =>
-    `<button class="est-btn ${String(p.estado).toLowerCase()===e.toLowerCase()?'act':''}" data-id="${p.id}" data-e="${e}">${e}</button>`
-  ).join("");
-  return `<div class="card">
-    <div class="top">
-      <div>
-        <div class="who">${p.nombre||"Sin nombre"}</div>
-        <div class="prod">${p.producto||"—"}</div>
-      </div>
-      <div class="total">${gs(p.total)}</div>
-    </div>
-    <div class="meta">📍 ${p.ciudad||"-"} &nbsp;·&nbsp; 📞 ${p.telefono||"-"}<br>${p.direccion?("🏠 "+p.direccion+"<br>"):""}🕒 ${p.fecha||"-"}</div>
-    <div class="estado-row">${botones}</div>
-  </div>`;
+  const esNuevo=String(p.estado).toLowerCase()==="nuevo";
+  const botones=ESTADOS.map(e=>`<button class="est-btn ${String(p.estado).toLowerCase()===e.toLowerCase()?'act':''}" data-id="${p.id}" data-e="${e}">${e}</button>`).join("");
+  return `<div class="card ${esNuevo?'new':''}">
+    <div class="top"><div><div class="who">${p.nombre||"Sin nombre"}</div><div class="prod">${p.producto||"—"}</div></div><div class="total">${gs(p.total)}</div></div>
+    <div class="meta">📍 ${p.ciudad||"-"} · 📞 ${p.telefono||"-"}<br>${p.direccion?("🏠 "+p.direccion+"<br>"):""}🕒 ${p.fecha||"-"}</div>
+    <div class="estado-row">${botones}</div></div>`;
 }
-
 function bindEstados(){
-  document.querySelectorAll(".est-btn").forEach(b => b.onclick = async () => {
-    const id=b.dataset.id, e=b.dataset.e;
-    if(!id){ return; }
-    b.textContent="…";
-    try{
-      const r = await api("/api/panel/estado", {method:"POST", body:JSON.stringify({id, estado:e})});
-      if(r.ok) cargarPedidos(); else alert("No se pudo actualizar: "+(r.error||""));
-    }catch(err){ alert("Error de conexión"); }
+  document.querySelectorAll(".est-btn").forEach(b=>b.onclick=async()=>{
+    if(!b.dataset.id) return; b.textContent="…";
+    try{ const r=await api("/api/panel/estado",{method:"POST",body:JSON.stringify({id:b.dataset.id,estado:b.dataset.e})}); r.ok?cargarPedidos():alert("No se pudo: "+(r.error||"")); }
+    catch(e){ alert("Error de conexión"); }
   });
 }
 
-// ---- Catálogo ----
+// Catálogo
 async function cargarCatalogo(){
-  const el = $("#v-catalogo");
-  el.innerHTML = `<div class="sec-h"><h2>Catálogo</h2></div><div class="loading">Cargando…</div>`;
+  const el=$("#v-catalogo");
+  el.innerHTML=`<div class="sec-h"><h2>Catálogo</h2><button class="add" id="btnAddPr">+ Producto</button></div><div class="loading">Cargando…</div>`;
+  $("#btnAddPr").onclick=()=>abrir("modalProd");
   try{
-    const d = await api("/api/panel/catalogo");
-    const list = d.productos||[];
-    if(!list.length){ el.querySelector(".loading").outerHTML = `<div class="empty"><div class="big">Catálogo vacío</div>Agregá productos en tu tabla Catalogo_Espejo de Airtable.</div>`; return; }
-    el.querySelector(".loading").outerHTML = list.map(p => `
-      <div class="card prod-card">
-        <div>
-          <div class="who">${p.nombre||"Producto"}</div>
-          <div class="desc">${p.descripcion||""}</div>
-          <div style="margin-top:6px"><span class="badge ${p.stock&&p.stock.toLowerCase()==='disponible'?'b-entregado':'b-cancelado'}">${p.stock||"sin estado"}</span></div>
-        </div>
-        <div class="price">${gs(p.precio)}</div>
-      </div>`).join("");
-  }catch(e){ el.querySelector(".loading").outerHTML = errBox(e); }
+    const d=await api("/api/panel/catalogo"); const list=d.productos||[];
+    if(!list.length){ el.querySelector(".loading").outerHTML=`<div class="empty"><div class="big">Catálogo vacío</div>Agregá tu primer producto con “+ Producto”.</div>`; return; }
+    el.querySelector(".loading").outerHTML=list.map(p=>{
+      const ok=String(p.stock).toLowerCase()==="disponible";
+      return `<div class="card prod-card"><div><div class="who">${p.nombre||"Producto"}</div><div class="desc">${p.descripcion||""}</div><div style="margin-top:7px"><span class="badge ${ok?'b-ok':'b-no'}">${p.stock||"sin estado"}</span></div></div><div class="price">${gs(p.precio)}</div></div>`;
+    }).join("");
+  }catch(e){ el.querySelector(".loading").outerHTML=errBox(e); }
 }
 
-// ---- Modal nuevo pedido ----
-function abrirModal(){ $("#modalErr").classList.add("hidden"); $("#modalBg").classList.add("show"); }
-$("#modalCancel").onclick = () => $("#modalBg").classList.remove("show");
-$("#modalBg").onclick = e => { if(e.target===$("#modalBg")) $("#modalBg").classList.remove("show"); };
-$("#modalSave").onclick = async () => {
-  const body = {
-    producto:$("#f-producto").value.trim(), total:$("#f-total").value.trim(),
-    estado:$("#f-estado").value, nombre:$("#f-nombre").value.trim(),
-    ciudad:$("#f-ciudad").value.trim(), telefono:$("#f-tel").value.trim(),
-    direccion:$("#f-dir").value.trim()
-  };
-  if(!body.nombre && !body.producto){ mostrarModalErr("Poné al menos el producto y el cliente."); return; }
-  $("#modalSave").textContent="Guardando…";
-  try{
-    const r = await api("/api/panel/pedido", {method:"POST", body:JSON.stringify(body)});
-    if(r.ok){
-      $("#modalBg").classList.remove("show");
-      ["f-producto","f-total","f-nombre","f-ciudad","f-tel","f-dir"].forEach(id=>$("#"+id).value="");
-      cargarPedidos();
-    } else { mostrarModalErr("No se guardó: "+(r.error||"revisá que la tabla Pedidos tenga la columna Producto")); }
-  }catch(e){ mostrarModalErr("Error de conexión."); }
-  finally{ $("#modalSave").textContent="Guardar venta"; }
+// Fer
+let ferPintado=false;
+function pintarFer(){
+  if(ferPintado) return; ferPintado=true;
+  $("#v-fer").innerHTML=`
+    <div class="intro"><b>Fer, tu asistente.</b> Preguntale por tus ventas, tus charlas con clientes, o qué podés mejorar. Te responde con tus datos reales.</div>
+    <div class="chips">
+      <button class="chip" data-q="¿Cuántas ventas tengo hoy y en total?">Ventas de hoy</button>
+      <button class="chip" data-q="Mostrame los últimos pedidos">Últimos pedidos</button>
+      <button class="chip" data-q="Según mis charlas y ventas, ¿qué puedo mejorar?">¿Qué mejorar?</button>
+    </div>
+    <div id="ferMsgs"></div>
+    <div class="ferbar"><input id="ferIn" placeholder="Escribile a Fer…" /><button id="ferSend">Enviar</button></div>`;
+  document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{ $("#ferIn").value=c.dataset.q; mandarFer(); });
+  $("#ferSend").onclick=mandarFer;
+  $("#ferIn").addEventListener("keydown",e=>{ if(e.key==="Enter") mandarFer(); });
+}
+function bub(txt,who){ const d=document.createElement("div"); d.className="bub "+who; d.textContent=txt; $("#ferMsgs").appendChild(d); d.scrollIntoView({behavior:"smooth"}); return d; }
+async function mandarFer(){
+  const t=$("#ferIn").value.trim(); if(!t) return;
+  $("#ferIn").value=""; bub(t,"me");
+  const wait=bub("Fer está pensando…","fer");
+  try{ const r=await api("/api/panel/fer",{method:"POST",body:JSON.stringify({mensaje:t})}); wait.textContent=r.respuesta||"(sin respuesta)"; }
+  catch(e){ wait.textContent = e.message==="401" ? "Sesión vencida, recargá." : "No pude conectar con Fer. Probá de nuevo."; }
+}
+
+// Modales
+function abrir(id){ document.querySelectorAll(".msg-err").forEach(x=>x.classList.add("hidden")); $("#"+id).classList.add("show"); }
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>b.closest(".modal-bg").classList.remove("show"));
+document.querySelectorAll(".modal-bg").forEach(m=>m.onclick=e=>{ if(e.target===m) m.classList.remove("show"); });
+
+$("#pSave").onclick=async()=>{
+  const body={producto:$("#p-producto").value.trim(),total:$("#p-total").value.trim(),estado:$("#p-estado").value,nombre:$("#p-nombre").value.trim(),ciudad:$("#p-ciudad").value.trim(),telefono:$("#p-tel").value.trim(),direccion:$("#p-dir").value.trim()};
+  if(!body.nombre&&!body.producto){ merr("pErr","Poné al menos el producto y el cliente."); return; }
+  $("#pSave").textContent="Guardando…";
+  try{ const r=await api("/api/panel/pedido",{method:"POST",body:JSON.stringify(body)});
+    if(r.ok){ $("#modalPedido").classList.remove("show"); ["p-producto","p-total","p-nombre","p-ciudad","p-tel","p-dir"].forEach(id=>$("#"+id).value=""); cargarPedidos(); }
+    else merr("pErr","No se guardó: "+(r.error||"revisá que Pedidos tenga la columna Producto")); }
+  catch(e){ merr("pErr","Error de conexión."); } finally{ $("#pSave").textContent="Guardar venta"; }
 };
-function mostrarModalErr(t){ const e=$("#modalErr"); e.textContent=t; e.classList.remove("hidden"); }
-
-function errBox(e){
-  if(e.message==="401"){ location.reload(); return ""; }
-  return `<div class="msg-err">No pude traer los datos. Si el bot estaba dormido, esperá unos segundos y recargá.</div>`;
-}
-</script>
-</body>
-</html>
+$("#prSave").onclick=async()=>{
+  const body={nombre:$("#pr-nombre").value.trim(),precio:$("#pr-precio").value.trim(),stock:$("#pr-stock").value,descripcion:$("#pr-desc").value.trim()};
+  if(!body.nombre){ merr("prErr","Poné el nombre del producto."); return; }
+  $("#prSave").textContent="Guardando…";
+  try{ const r=await api("/api/panel/producto",{method:"POST",
