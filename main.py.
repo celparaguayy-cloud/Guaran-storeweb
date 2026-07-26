@@ -1422,6 +1422,54 @@ def enviar_whatsapp(
 
 
 # ================= PAGINA PRINCIPAL =================
+# ============================================================
+#  PANEL v2 — 2 ENDPOINTS NUEVOS para agregar a tu main.py
+#  Pegá estos DOS bloques ANTES de la línea  @app.get("/")
+#  (junto a los otros /api/panel que ya pegaste). NO borres nada.
+# ============================================================
+
+
+# ------- 1) CARGAR UN PRODUCTO NUEVO desde la web -------
+@app.post("/api/panel/producto")
+async def api_panel_crear_producto(request: Request, x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    d = await request.json()
+    nombre = (d.get("nombre", "") or "").strip()
+    pid = (d.get("producto_id", "") or "").strip()
+    if not pid:
+        pid = nombre.lower().replace(" ", "")[:20] or "producto"
+    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE}/{TABLA_CATALOGO}"
+    headers = {"Authorization": f"Bearer {AIRTABLE_KEY}", "Content-Type": "application/json"}
+    cuerpo = {
+        "fields": {
+            "producto_id":       pid,
+            "nombre":            nombre,
+            "precio_gs":         d.get("precio", ""),
+            "stock_estado":      d.get("stock", "disponible"),
+            "descripcion_corta": d.get("descripcion", ""),
+        },
+        "typecast": True,   # deja que Airtable acomode el estado (disponible/agotado)
+    }
+    r = requests.post(url, headers=headers, json=cuerpo, timeout=10)
+    if r.status_code not in (200, 201):
+        return {"ok": False, "error": r.text}
+    return {"ok": True}
+
+
+# ------- 2) FER EN MODO DUENO (reportes dentro del panel) -------
+@app.post("/api/panel/fer")
+async def api_panel_fer(request: Request, x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    datos = await request.json()
+    mensaje = (datos.get("mensaje", "") or "").strip()
+    if not mensaje:
+        return {"respuesta": "Decime qué querés saber: ventas de hoy, últimos pedidos, qué mejorar…"}
+    # Reusa las funciones que ya tenés en el bot:
+    contexto = resumen_ventas() + "\n\n=== CONVERSACIONES RECIENTES ===\n" + leer_conversaciones()
+    respuesta = preguntar_a_gemini([], f"{contexto}\n\nMensaje del dueno: {mensaje}", PROMPT_DUENO)
+    return {"respuesta": respuesta}
 
 @app.get("/")
 def inicio():
