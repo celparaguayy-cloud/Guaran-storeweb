@@ -1,256 +1,334 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Guaranístore · Fer Bot</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Guaranístore · Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1EA; --card:#FFFFFF; --ink:#16281F; --jade:#1E6E4F;
+    --jade-d:#155038; --amber:#E8A93B; --red:#C0413A; --line:#E1E6DC;
+    --muted:#6C7A70;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Inter",system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+    line-height:1.5; padding-bottom:40px;
+  }
+  .wrap{max-width:560px; margin:0 auto; padding:0 16px}
+  h1,h2,.num{font-family:"Fraunces",Georgia,serif}
+  .num{font-variant-numeric:tabular-nums; letter-spacing:-.01em}
+
+  /* ---- Login ---- */
+  #login{min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:24px; text-align:center}
+  #login .logo{font-family:"Fraunces"; font-weight:700; font-size:34px; color:var(--jade); letter-spacing:-.02em}
+  #login p{color:var(--muted); margin:8px 0 28px; font-size:15px}
+  #login input{width:100%; max-width:300px; padding:14px 16px; border:1.5px solid var(--line); border-radius:12px; font-size:16px; font-family:inherit; text-align:center}
+  #login input:focus{outline:none; border-color:var(--jade)}
+  #login button{width:100%; max-width:300px; margin-top:12px; padding:14px; border:none; border-radius:12px; background:var(--jade); color:#fff; font-size:16px; font-weight:600; font-family:inherit; cursor:pointer}
+  #login .err{color:var(--red); font-size:14px; margin-top:14px; min-height:18px}
+
+  /* ---- Header ---- */
+  header{background:var(--jade); color:#fff; padding:20px 0 16px}
+  header .wrap{display:flex; align-items:center; justify-content:space-between}
+  .brand{font-family:"Fraunces"; font-weight:700; font-size:22px; letter-spacing:-.02em}
+  .status{display:flex; align-items:center; gap:6px; font-size:12.5px; opacity:.9}
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--amber); box-shadow:0 0 0 0 rgba(232,169,59,.6); animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(232,169,59,.5)}70%{box-shadow:0 0 0 7px rgba(232,169,59,0)}100%{box-shadow:0 0 0 0 rgba(232,169,59,0)}}
+
+  /* ---- Tabs ---- */
+  nav{position:sticky; top:0; z-index:5; background:var(--bg); border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex; gap:4px; padding-top:8px; padding-bottom:8px}
+  .tab{flex:1; padding:9px 6px; border:none; background:transparent; font-family:inherit; font-size:13.5px; font-weight:600; color:var(--muted); border-radius:9px; cursor:pointer}
+  .tab.on{background:var(--ink); color:#fff}
+
+  /* ---- Content ---- */
+  main{padding-top:18px}
+  .stats{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px}
+  .stat{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px}
+  .stat .n{font-size:30px; font-weight:700}
+  .stat .l{font-size:12.5px; color:var(--muted); margin-top:2px}
+  .stat.hi{background:var(--jade); border-color:var(--jade); color:#fff}
+  .stat.hi .l{color:rgba(255,255,255,.85)}
+
+  .sec-h{display:flex; align-items:center; justify-content:space-between; margin:22px 2px 12px}
+  .sec-h h2{font-size:19px; font-weight:600}
+  .add{border:none; background:var(--amber); color:#2a1e00; font-family:inherit; font-weight:600; font-size:13.5px; padding:8px 14px; border-radius:10px; cursor:pointer}
+
+  .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:15px 16px; margin-bottom:10px}
+  .card .top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px}
+  .card .who{font-weight:600; font-size:15.5px}
+  .card .prod{color:var(--jade); font-size:13.5px; font-weight:500; margin-top:1px}
+  .card .meta{color:var(--muted); font-size:13px; margin-top:8px; line-height:1.55}
+  .card .total{font-family:"Fraunces"; font-weight:600; font-size:16px; white-space:nowrap}
+
+  .badge{display:inline-block; font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:20px; text-transform:capitalize}
+  .b-nuevo{background:#FDF0D6; color:#9a6a10}
+  .b-confirmado{background:#DBEBFB; color:#1d5a99}
+  .b-enviado{background:#E7E1FA; color:#5b3fa8}
+  .b-entregado{background:#D8EFE1; color:#1a6a45}
+  .b-cancelado{background:#F6DEDC; color:#a23b34}
+
+  .estado-row{display:flex; gap:6px; flex-wrap:wrap; margin-top:12px}
+  .est-btn{font-size:12px; font-weight:600; padding:6px 11px; border-radius:8px; border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer}
+  .est-btn.act{background:var(--jade); color:#fff; border-color:var(--jade)}
+
+  .prod-card{display:flex; justify-content:space-between; align-items:center; gap:12px}
+  .prod-card .price{font-family:"Fraunces"; font-weight:600; font-size:16px}
+  .prod-card .desc{color:var(--muted); font-size:12.5px; margin-top:3px}
+
+  .empty{text-align:center; color:var(--muted); padding:40px 20px}
+  .empty .big{font-family:"Fraunces"; font-size:19px; color:var(--ink); margin-bottom:6px}
+  .loading{text-align:center; color:var(--muted); padding:36px; font-size:14px}
+  .msg-err{background:#FBE7E5; color:#8a2f29; border-radius:12px; padding:12px 14px; font-size:13.5px; margin-bottom:10px}
+
+  /* ---- Modal ---- */
+  .modal-bg{position:fixed; inset:0; background:rgba(20,30,24,.5); display:none; align-items:flex-end; z-index:20}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--bg); width:100%; max-width:560px; margin:0 auto; border-radius:20px 20px 0 0; padding:22px 18px 30px; max-height:90vh; overflow:auto}
+  .modal h3{font-family:"Fraunces"; font-size:20px; margin-bottom:16px}
+  .modal label{display:block; font-size:13px; font-weight:600; color:var(--muted); margin:12px 0 5px}
+  .modal input, .modal select{width:100%; padding:12px 13px; border:1.5px solid var(--line); border-radius:11px; font-size:15px; font-family:inherit; background:#fff}
+  .modal input:focus,.modal select:focus{outline:none; border-color:var(--jade)}
+  .modal .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .modal .actions{display:flex; gap:10px; margin-top:22px}
+  .modal .save{flex:1; padding:14px; border:none; border-radius:12px; background:var(--jade); color:#fff; font-weight:600; font-size:15px; font-family:inherit; cursor:pointer}
+  .modal .cancel{padding:14px 18px; border:1.5px solid var(--line); border-radius:12px; background:#fff; font-weight:600; font-family:inherit; cursor:pointer}
+  .hidden{display:none !important}
+</style>
 </head>
 <body>
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-mark">G</div>
-      <div>
-        <strong>Guaranístore</strong>
-        <span>Fer Bot Control</span>
-      </div>
+
+<!-- ============ LOGIN ============ -->
+<div id="login">
+  <div class="logo">Guaranístore</div>
+  <p>Panel del negocio</p>
+  <input id="clave" type="password" placeholder="Tu clave" autocomplete="off" />
+  <button id="entrar">Entrar</button>
+  <div class="err" id="loginErr"></div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="hidden">
+  <header>
+    <div class="wrap">
+      <div class="brand">Guaranístore</div>
+      <div class="status"><span class="dot"></span> Fer atendiendo</div>
     </div>
+  </header>
 
-    <nav>
-      <button class="nav-item active" data-view="dashboard">
-        <span>⌂</span> Resumen
-      </button>
-      <button class="nav-item" data-view="chat">
-        <span>◉</span> Chat en vivo
-      </button>
-      <button class="nav-item" data-view="audit">
-        <span>⌁</span> Auditor de Fer
-      </button>
-      <button class="nav-item" data-view="orders">
-        <span>▣</span> Pedidos
-      </button>
-      <button class="nav-item" data-view="catalog">
-        <span>◇</span> Catálogo
-      </button>
-    </nav>
-
-    <div class="sidebar-bottom">
-      <div class="bot-status">
-        <span class="status-dot"></span>
-        <div>
-          <strong>Fer Bot activo</strong>
-          <small>Funcionando normalmente</small>
-        </div>
-      </div>
-      <div class="profile">
-        <div class="avatar">FC</div>
-        <div>
-          <strong>Fernando</strong>
-          <small>Dueño</small>
-        </div>
-      </div>
+  <nav>
+    <div class="wrap">
+      <button class="tab on" data-t="resumen">Resumen</button>
+      <button class="tab" data-t="pedidos">Pedidos</button>
+      <button class="tab" data-t="catalogo">Catálogo</button>
     </div>
-  </aside>
+  </nav>
 
-  <main class="main">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">CENTRO DE CONTROL</p>
-        <h1 id="page-title">Resumen del negocio</h1>
-      </div>
-      <div class="top-actions">
-        <span class="live-pill"><span class="status-dot"></span> Sistema online</span>
-        <button class="icon-btn" title="Notificaciones">♢</button>
-        <button class="avatar top-avatar">FC</button>
-      </div>
-    </header>
-
-    <section id="dashboard-view" class="view active-view">
-      <div class="welcome-card">
-        <div>
-          <p class="eyebrow">BUENAS, FERNANDO</p>
-          <h2>Tu negocio, en una sola vista.</h2>
-          <p>Mirà qué está haciendo Fer, dónde están las oportunidades y qué conversaciones necesitan atención.</p>
-        </div>
-        <div class="welcome-orb">✦</div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card">
-          <span class="stat-label">Pedidos totales</span>
-          <strong id="stat-orders">0</strong>
-          <span class="stat-change positive">↑ actualizado desde Airtable</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Pedidos de hoy</span>
-          <strong id="stat-today">0</strong>
-          <span class="stat-change positive">↑ actividad reciente</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Conversaciones</span>
-          <strong id="stat-conversations">0</strong>
-          <span class="stat-change">clientes atendidos</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Estado de Fer</span>
-          <strong class="online-text">Activo</strong>
-          <span class="stat-change positive">● respondiendo</span>
-        </div>
-      </div>
-
-      <div class="content-grid">
-        <div class="panel chart-panel">
-          <div class="panel-header">
-            <div>
-              <p class="eyebrow">ACTIVIDAD</p>
-              <h3>Pedidos recientes</h3>
-            </div>
-            <select id="chart-range">
-              <option>Últimos 7 días</option>
-              <option>Últimos 30 días</option>
-            </select>
-          </div>
-          <canvas id="ordersChart"></canvas>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div>
-              <p class="eyebrow">INTELIGENCIA</p>
-              <h3>Qué está pasando</h3>
-            </div>
-          </div>
-          <div class="insight-list">
-            <div class="insight">
-              <div class="insight-icon">◌</div>
-              <div>
-                <strong>Conversaciones activas</strong>
-                <p>Revisá las charlas en tiempo real para detectar oportunidades.</p>
-              </div>
-            </div>
-            <div class="insight">
-              <div class="insight-icon">↗</div>
-              <div>
-                <strong>Auditoría automática</strong>
-                <p>Encontrá dónde Fer pierde ventas o puede responder mejor.</p>
-              </div>
-            </div>
-            <div class="insight">
-              <div class="insight-icon">✓</div>
-              <div>
-                <strong>Datos reales</strong>
-                <p>Pedidos y catálogo vienen de la información real del negocio.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-header">
-          <div>
-            <p class="eyebrow">ÚLTIMOS MOVIMIENTOS</p>
-            <h3>Pedidos recientes</h3>
-          </div>
-          <button class="text-btn" data-view-target="orders">Ver todos →</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Cliente</th><th>Ciudad</th><th>Producto</th><th>Estado</th><th>Fecha</th></tr>
-            </thead>
-            <tbody id="recent-orders"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section id="chat-view" class="view">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">OBSERVACIÓN EN TIEMPO REAL</p>
-          <h2>Chat en vivo</h2>
-          <p>Mirà cómo Fer trabaja con tus clientes sin interrumpir sus conversaciones.</p>
-        </div>
-        <span class="live-pill"><span class="status-dot"></span> Monitoreando</span>
-      </div>
-      <div class="chat-layout">
-        <div class="panel conversations-list">
-          <div class="search-box">⌕ <input id="conversation-search" placeholder="Buscar conversación..."></div>
-          <div id="conversation-list"></div>
-        </div>
-        <div class="panel chat-window">
-          <div class="chat-header">
-            <div class="avatar customer-avatar">MG</div>
-            <div>
-              <strong id="chat-customer">Seleccioná una conversación</strong>
-              <small id="chat-meta">—</small>
-            </div>
-            <span class="live-tag">EN VIVO</span>
-          </div>
-          <div id="chat-messages" class="messages">
-            <div class="empty-state">Elegí una conversación para ver cómo trabaja Fer.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="audit-view" class="view">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">MEJORA CONTINUA</p>
-          <h2>Auditor de Fer</h2>
-          <p>Detectá errores, oportunidades y puntos donde una conversación pudo terminar en venta.</p>
-        </div>
-        <button class="primary-btn" id="run-audit">Analizar conversaciones</button>
-      </div>
-      <div class="audit-grid">
-        <div class="panel score-card">
-          <p class="eyebrow">PUNTUACIÓN GENERAL</p>
-          <div class="score-ring"><span id="audit-score">—</span><small>/100</small></div>
-          <p id="audit-summary">Ejecutá un análisis para obtener una lectura del rendimiento de Fer.</p>
-        </div>
-        <div class="panel">
-          <div class="panel-header"><h3>Hallazgos</h3></div>
-          <div id="audit-findings" class="finding-list">
-            <div class="empty-state">Todavía no hay un análisis ejecutado.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="orders-view" class="view">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">VENTAS</p>
-          <h2>Pedidos</h2>
-          <p>Todos los pedidos registrados por Fer.</p>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="search-box">⌕ <input id="order-search" placeholder="Buscar por nombre, ciudad o producto..."></div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Cliente</th><th>Ciudad</th><th>Teléfono</th><th>Producto</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
-            <tbody id="orders-table"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section id="catalog-view" class="view">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">PRODUCTOS</p>
-          <h2>Catálogo</h2>
-          <p>Los productos que Fer puede consultar y vender.</p>
-        </div>
-      </div>
-      <div id="catalog-grid" class="catalog-grid"></div>
-    </section>
+  <main class="wrap">
+    <section id="v-resumen"></section>
+    <section id="v-pedidos" class="hidden"></section>
+    <section id="v-catalogo" class="hidden"></section>
   </main>
+</div>
 
-  <script src="app.js"></script>
+<!-- ============ MODAL nuevo pedido ============ -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>Cargar venta a mano</h3>
+    <div id="modalErr" class="msg-err hidden"></div>
+    <label>Producto</label>
+    <input id="f-producto" placeholder="Ej: Depiladora IPL" />
+    <div class="row2">
+      <div><label>Precio (Gs.)</label><input id="f-total" inputmode="numeric" placeholder="280.000" /></div>
+      <div><label>Estado</label>
+        <select id="f-estado">
+          <option>Nuevo</option><option>Confirmado</option>
+          <option>Enviado</option><option>Entregado</option>
+        </select>
+      </div>
+    </div>
+    <label>Nombre del cliente</label>
+    <input id="f-nombre" placeholder="Nombre y apellido" />
+    <div class="row2">
+      <div><label>Ciudad</label><input id="f-ciudad" placeholder="Ciudad" /></div>
+      <div><label>Teléfono</label><input id="f-tel" inputmode="tel" placeholder="09xx xxxxxx" /></div>
+    </div>
+    <label>Dirección</label>
+    <input id="f-dir" placeholder="Dirección de entrega" />
+    <div class="actions">
+      <button class="cancel" id="modalCancel">Cancelar</button>
+      <button class="save" id="modalSave">Guardar venta</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====== CONFIG: la dirección de tu bot en Render ======
+const BACKEND = "https://guaranistorebot.onrender.com";
+let CLAVE = "";
+const ESTADOS = ["Nuevo","Confirmado","Enviado","Entregado","Cancelado"];
+
+const $ = s => document.querySelector(s);
+const gs = v => { const n = String(v||"").replace(/[^\d]/g,""); return n ? "Gs. " + Number(n).toLocaleString("es-PY") : (v||"-"); };
+const badgeClass = e => "b-" + String(e||"nuevo").toLowerCase().replace(/[^a-z]/g,"");
+
+async function api(path, opts={}){
+  const r = await fetch(BACKEND + path, {
+    ...opts,
+    headers:{ "Content-Type":"application/json", "X-Clave": CLAVE, ...(opts.headers||{}) }
+  });
+  if(r.status === 401) throw new Error("401");
+  return r.json();
+}
+
+// ---- Login ----
+$("#entrar").onclick = entrar;
+$("#clave").addEventListener("keydown", e => { if(e.key==="Enter") entrar(); });
+async function entrar(){
+  CLAVE = $("#clave").value.trim();
+  $("#loginErr").textContent = "";
+  if(!CLAVE){ $("#loginErr").textContent = "Escribí tu clave"; return; }
+  $("#entrar").textContent = "Entrando…";
+  try{
+    await api("/api/panel/resumen");   // si la clave está mal, tira 401
+    $("#login").classList.add("hidden");
+    $("#app").classList.remove("hidden");
+    cargarResumen();
+  }catch(e){
+    $("#loginErr").textContent = e.message==="401" ? "Clave incorrecta" : "No pude conectar. Probá de nuevo en un momento.";
+    CLAVE = "";
+  }finally{ $("#entrar").textContent = "Entrar"; }
+}
+
+// ---- Tabs ----
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+  t.classList.add("on");
+  ["resumen","pedidos","catalogo"].forEach(v => $("#v-"+v).classList.add("hidden"));
+  const v = t.dataset.t; $("#v-"+v).classList.remove("hidden");
+  if(v==="resumen") cargarResumen();
+  if(v==="pedidos") cargarPedidos();
+  if(v==="catalogo") cargarCatalogo();
+});
+
+// ---- Resumen ----
+async function cargarResumen(){
+  const el = $("#v-resumen");
+  el.innerHTML = '<div class="loading">Cargando…</div>';
+  try{
+    const d = await api("/api/panel/resumen");
+    el.innerHTML = `
+      <div class="stats">
+        <div class="stat hi"><div class="n num">${d.total||0}</div><div class="l">Ventas totales</div></div>
+        <div class="stat"><div class="n num">${d.hoy||0}</div><div class="l">Ventas hoy</div></div>
+        <div class="stat"><div class="n num">${d.nuevos||0}</div><div class="l">Nuevos por despachar</div></div>
+        <div class="stat"><div class="n num">${d.entregados||0}</div><div class="l">Entregados</div></div>
+      </div>
+      <div class="empty"><div class="big">¡Buen trabajo, Fer!</div>Cargá tus ventas en la pestaña Pedidos y las vas a ver acá.</div>`;
+  }catch(e){ el.innerHTML = errBox(e); }
+}
+
+// ---- Pedidos ----
+async function cargarPedidos(){
+  const el = $("#v-pedidos");
+  el.innerHTML = `<div class="sec-h"><h2>Pedidos</h2><button class="add" id="btnAdd">+ Cargar venta</button></div><div class="loading">Cargando…</div>`;
+  $("#btnAdd").onclick = abrirModal;
+  try{
+    const d = await api("/api/panel/pedidos");
+    const list = (d.pedidos||[]).filter(p => p.nombre || p.producto || p.total);
+    if(!list.length){
+      el.querySelector(".loading").outerHTML =
+        `<div class="empty"><div class="big">Todavía no hay pedidos</div>Cerraste tu primera venta a mano — cargala acá con “+ Cargar venta” y empezá tu historial.</div>`;
+      return;
+    }
+    el.querySelector(".loading").outerHTML = list.map(pedidoCard).join("");
+    bindEstados();
+  }catch(e){ el.querySelector(".loading").outerHTML = errBox(e); }
+}
+
+function pedidoCard(p){
+  const botones = ESTADOS.map(e =>
+    `<button class="est-btn ${String(p.estado).toLowerCase()===e.toLowerCase()?'act':''}" data-id="${p.id}" data-e="${e}">${e}</button>`
+  ).join("");
+  return `<div class="card">
+    <div class="top">
+      <div>
+        <div class="who">${p.nombre||"Sin nombre"}</div>
+        <div class="prod">${p.producto||"—"}</div>
+      </div>
+      <div class="total">${gs(p.total)}</div>
+    </div>
+    <div class="meta">📍 ${p.ciudad||"-"} &nbsp;·&nbsp; 📞 ${p.telefono||"-"}<br>${p.direccion?("🏠 "+p.direccion+"<br>"):""}🕒 ${p.fecha||"-"}</div>
+    <div class="estado-row">${botones}</div>
+  </div>`;
+}
+
+function bindEstados(){
+  document.querySelectorAll(".est-btn").forEach(b => b.onclick = async () => {
+    const id=b.dataset.id, e=b.dataset.e;
+    if(!id){ return; }
+    b.textContent="…";
+    try{
+      const r = await api("/api/panel/estado", {method:"POST", body:JSON.stringify({id, estado:e})});
+      if(r.ok) cargarPedidos(); else alert("No se pudo actualizar: "+(r.error||""));
+    }catch(err){ alert("Error de conexión"); }
+  });
+}
+
+// ---- Catálogo ----
+async function cargarCatalogo(){
+  const el = $("#v-catalogo");
+  el.innerHTML = `<div class="sec-h"><h2>Catálogo</h2></div><div class="loading">Cargando…</div>`;
+  try{
+    const d = await api("/api/panel/catalogo");
+    const list = d.productos||[];
+    if(!list.length){ el.querySelector(".loading").outerHTML = `<div class="empty"><div class="big">Catálogo vacío</div>Agregá productos en tu tabla Catalogo_Espejo de Airtable.</div>`; return; }
+    el.querySelector(".loading").outerHTML = list.map(p => `
+      <div class="card prod-card">
+        <div>
+          <div class="who">${p.nombre||"Producto"}</div>
+          <div class="desc">${p.descripcion||""}</div>
+          <div style="margin-top:6px"><span class="badge ${p.stock&&p.stock.toLowerCase()==='disponible'?'b-entregado':'b-cancelado'}">${p.stock||"sin estado"}</span></div>
+        </div>
+        <div class="price">${gs(p.precio)}</div>
+      </div>`).join("");
+  }catch(e){ el.querySelector(".loading").outerHTML = errBox(e); }
+}
+
+// ---- Modal nuevo pedido ----
+function abrirModal(){ $("#modalErr").classList.add("hidden"); $("#modalBg").classList.add("show"); }
+$("#modalCancel").onclick = () => $("#modalBg").classList.remove("show");
+$("#modalBg").onclick = e => { if(e.target===$("#modalBg")) $("#modalBg").classList.remove("show"); };
+$("#modalSave").onclick = async () => {
+  const body = {
+    producto:$("#f-producto").value.trim(), total:$("#f-total").value.trim(),
+    estado:$("#f-estado").value, nombre:$("#f-nombre").value.trim(),
+    ciudad:$("#f-ciudad").value.trim(), telefono:$("#f-tel").value.trim(),
+    direccion:$("#f-dir").value.trim()
+  };
+  if(!body.nombre && !body.producto){ mostrarModalErr("Poné al menos el producto y el cliente."); return; }
+  $("#modalSave").textContent="Guardando…";
+  try{
+    const r = await api("/api/panel/pedido", {method:"POST", body:JSON.stringify(body)});
+    if(r.ok){
+      $("#modalBg").classList.remove("show");
+      ["f-producto","f-total","f-nombre","f-ciudad","f-tel","f-dir"].forEach(id=>$("#"+id).value="");
+      cargarPedidos();
+    } else { mostrarModalErr("No se guardó: "+(r.error||"revisá que la tabla Pedidos tenga la columna Producto")); }
+  }catch(e){ mostrarModalErr("Error de conexión."); }
+  finally{ $("#modalSave").textContent="Guardar venta"; }
+};
+function mostrarModalErr(t){ const e=$("#modalErr"); e.textContent=t; e.classList.remove("hidden"); }
+
+function errBox(e){
+  if(e.message==="401"){ location.reload(); return ""; }
+  return `<div class="msg-err">No pude traer los datos. Si el bot estaba dormido, esperá unos segundos y recargá.</div>`;
+}
+</script>
 </body>
 </html>
