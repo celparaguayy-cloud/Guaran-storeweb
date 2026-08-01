@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Novva · Calculadora de ganancia</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#091120;--card:#111F36;--line:#213656;--ink:#EAF1FB;--muted:#8DA2C0;
+    --cyan:#38BDF8;--violet:#A78BFA;--amber:#FBBF24;--green:#34D399;--rose:#FB7185;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;
+    padding:22px 16px 50px;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(90% 40% at 20% 0%,rgba(56,189,248,.10),transparent 60%),radial-gradient(80% 40% at 90% 5%,rgba(167,139,250,.10),transparent 55%)}
+  .wrap{max-width:460px;margin:0 auto}
+  h1{font-family:"Fraunces",serif;font-size:26px;font-weight:700;letter-spacing:-.02em;
+    background:linear-gradient(120deg,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .sub{color:var(--muted);font-size:14px;margin:4px 0 22px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px}
+  label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:12px 0 5px}
+  label:first-child{margin-top:0}
+  input{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font-size:16px;font-family:inherit}
+  input:focus{outline:none;border-color:var(--cyan)}
+  .out{background:linear-gradient(135deg,#0F2A33,#12233E);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center}
+  .out .lbl{color:var(--muted);font-size:13px}
+  .out .big{font-family:"Fraunces",serif;font-size:42px;font-weight:700;margin:4px 0;line-height:1}
+  .out .pct{font-size:14px;color:var(--muted)}
+  .g-ok{color:var(--green)} .g-bad{color:var(--rose)}
+  .rows{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+  .row{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;color:var(--muted)}
+  .row b{color:var(--ink);font-family:"Fraunces",serif;font-variant-numeric:tabular-nums}
+  .row.neg b{color:var(--rose)}
+  .tip{font-size:12.5px;color:var(--muted);margin-top:14px;line-height:1.55}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Calculadora de ganancia</h1>
+  <div class="sub">Cuánto ganás DE VERDAD por cada venta.</div>
+
+  <div class="card">
+    <label>Precio de venta (Gs.)</label>
+    <input id="venta" inputmode="numeric" placeholder="280.000" />
+    <label>Costo del producto (lo que te sale a vos)</label>
+    <input id="costo" inputmode="numeric" placeholder="150.000" />
+    <label>Envío (si lo pagás vos)</label>
+    <input id="envio" inputmode="numeric" placeholder="0" />
+    <label>Publicidad por venta (aprox.)</label>
+    <input id="pub" inputmode="numeric" placeholder="20.000" />
+    <label>Otros gastos</label>
+    <input id="otros" inputmode="numeric" placeholder="0" />
+  </div>
+
+  <div class="out">
+    <div class="lbl">Ganancia real por venta</div>
+    <div class="big" id="ganancia">Gs. 0</div>
+    <div class="pct" id="margen">Margen: —</div>
+    <div class="rows" id="detalle"></div>
+  </div>
+
+  <div class="tip" id="tip">Completá los números y te muestro lo que queda limpio en tu bolsillo. 💚</div>
+</div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  const num=v=>Number(String(v||"").replace(/[^\d]/g,""))||0;
+  const gs=n=>"Gs. "+Math.round(n).toLocaleString("es-PY");
+  const campos=["venta","costo","envio","pub","otros"];
+  campos.forEach(id=>$(id).addEventListener("input",calc));
+  function calc(){
+    const venta=num($("venta").value), costo=num($("costo").value), envio=num($("envio").value),
+          pub=num($("pub").value), otros=num($("otros").value);
+    const gasto=costo+envio+pub+otros;
+    const gan=venta-gasto;
+    const margen=venta>0?(gan/venta*100):0;
+    $("ganancia").textContent=gs(gan);
+    $("ganancia").className="big "+(gan>=0?"g-ok":"g-bad");
+    $("margen").textContent=venta>0?("Margen: "+margen.toFixed(0)+"%"):"Margen: —";
+    $("detalle").innerHTML=
+      '<div class="row"><span>Venta</span><b>'+gs(venta)+'</b></div>'+
+      '<div class="row neg"><span>− Costo producto</span><b>'+gs(costo)+'</b></div>'+
+      '<div class="row neg"><span>− Envío</span><b>'+gs(envio)+'</b></div>'+
+      '<div class="row neg"><span>− Publicidad</span><b>'+gs(pub)+'</b></div>'+
+      '<div class="row neg"><span>− Otros</span><b>'+gs(otros)+'</b></div>';
+    if(venta>0){
+      $("tip").textContent = gan<0
+        ? "⚠️ Con estos números estás perdiendo plata en cada venta. Subí el precio o bajá el costo/publicidad."
+        : (margen<20 ? "El margen está finito. Si la publicidad sube un poco, te quedás sin ganancia. Ojo con eso."
+                     : "👍 Buen margen. Este producto sí te deja plata — es candidato a meterle más publicidad.");
+    }
+  }
+</script>
+</body>
+</html>
