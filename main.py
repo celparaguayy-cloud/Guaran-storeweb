@@ -1490,6 +1490,654 @@ async def api_panel_fer(request: Request, x_clave: str = Header(default="")):
     respuesta = preguntar_a_gemini([], f"{contexto}\n\nMensaje del dueno: {mensaje}", PROMPT_DUENO)
     return {"respuesta": respuesta}
 
+
+# ============================================================
+#  CAPA AIRTABLE + ENDPOINTS DEL PANEL WEB (index.html)
+# ============================================================
+
+MESES_ES = [
+    "", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+]
+
+ESTADOS_CERRADOS = {"pagado", "entregado", "cancelado"}
+
+
+def _tz():
+    return timezone(timedelta(hours=-3))
+
+
+def _num(v):
+    return int(re.sub(r"[^\d]", "", str(v or "")) or 0)
+
+
+def _at_headers(escribir=False):
+    h = {"Authorization": f"Bearer {AIRTABLE_KEY}"}
+    if escribir:
+        h["Content-Type"] = "application/json"
+    return h
+
+
+def _at_listar(tabla, params=None, max_paginas=20):
+    """Devuelve todos los registros de una tabla (con paginacion)."""
+    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE}/{tabla}"
+    registros = []
+    offset = None
+    for _ in range(max_paginas):
+        p = dict(params or {})
+        p["pageSize"] = 100
+        if offset:
+            p["offset"] = offset
+        try:
+            r = requests.get(url, headers=_at_headers(), params=p, timeout=15)
+        except Exception as e:
+            print(">>> AIRTABLE listar error:", tabla, e)
+            break
+        if r.status_code != 200:
+            print(">>> AIRTABLE listar:", tabla, r.status_code, r.text[:200])
+            break
+        data = r.json()
+        registros.extend(data.get("records", []))
+        offset = data.get("offset")
+        if not offset:
+            break
+    return registros
+
+
+def _at_crear(tabla, fields):
+    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE}/{tabla}"
+    try:
+        r = requests.post(
+            url, headers=_at_headers(True),
+            json={"fields": fields, "typecast": True}, timeout=15
+        )
+    except Exception as e:
+        return False, str(e)
+    if r.status_code not in (200, 201):
+        return False, r.text
+    return True, r.json()
+
+
+def _at_actualizar(tabla, rec_id, fields):
+    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE}/{tabla}/{rec_id}"
+    try:
+        r = requests.patch(
+            url, headers=_at_headers(True),
+            json={"fields": fields, "typecast": True}, timeout=15
+        )
+    except Exception as e:
+        return False, str(e)
+    if r.status_code != 200:
+        return False, r.text
+    return True, r.json()
+
+
+def _at_borrar(tabla, rec_id):
+    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE}/{tabla}/{rec_id}"
+    try:
+        r = requests.delete(url, headers=_at_headers(), timeout=15)
+    except Exception as e:
+        return False, str(e)
+    if r.status_code != 200:
+        return False, r.text
+    return True, r.json()
+
+
+def _campo(fields, *nombres, default=""):
+    """Lee un campo tolerando mayusculas/variantes de nombre."""
+    low = {str(k).lower(): v for k, v in fields.items()}
+    for n in nombres:
+        v = low.get(n.lower())
+        if v not in (None, ""):
+            return v
+    return default
+
+
+def _parse_fecha(s, created=""):
+    s = str(s or "").strip()
+    for fmt in ("%d/%m/%Y %H:%M", "%d/%m/%Y", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(s, fmt).replace(tzinfo=_tz())
+        except Exception:
+            pass
+    if created:
+        try:
+            return datetime.fromisoformat(created.replace("Z", "+00:00"))
+        except Exception:
+            pass
+    return None
+
+
+def _hace_dias(dt):
+    if not dt:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=_tz())
+    return max(0, (datetime.now(_tz()) - dt).days)
+
+
+def _pedido_norm(reg):
+    f = reg.get("fields", {})
+    return {
+        "id": reg.get("id", ""),
+        "nombre": _campo(f, "Nombre", "nombre"),
+        "ciudad": _campo(f, "Ciudad", "ciudad"),
+        "telefono": _campo(f, "Telefono", "Teléfono", "telefono", "tel"),
+        "producto": _campo(f, "Producto", "producto"),
+        "total": _campo(f, "Total", "Precio", "total", "precio"),
+        "estado": _campo(f, "Estado", "estado", default="Nuevo"),
+        "direccion": _campo(f, "Direccion", "Dirección", "direccion"),
+        "fecha": _campo(f, "Fecha", "fecha"),
+        "_createdTime": reg.get("createdTime", ""),
+    }
+
+
+def _pub(pe):
+    return {k: v for k, v in pe.items() if not k.startswith("_")}
+
+
+def _prod_norm(reg):
+    f = reg.get("fields", {})
+    return {
+        "id": reg.get("id", ""),
+        "nombre": _campo(f, "nombre", "Nombre", "producto_id"),
+        "precio": _campo(f, "precio_gs", "precio", "Precio"),
+        "descripcion": _campo(f, "descripcion_corta", "descripcion", "Descripcion"),
+        "stock": _campo(f, "stock_estado", "stock", "Stock", default="disponible"),
+        "costo": _campo(f, "costo_gs", "costo", "Costo", default=""),
+    }
+
+
+def _agrupar_conversaciones(regs):
+    """Agrupa la tabla Conversaciones por contacto en orden de aparicion."""
+    orden = []
+    por_contacto = {}
+    for r in regs:
+        f = r.get("fields", {})
+        cid = _campo(f, "contact_id", "contacto")
+        msg = _campo(f, "mensaje_entrante", "mensaje")
+        if not cid or not msg:
+            continue
+        if msg.startswith("[bot] "):
+            rol, texto = "fer", msg[6:]
+        elif msg.startswith("[user] "):
+            rol, texto = "cliente", msg[7:]
+        else:
+            rol, texto = "cliente", msg
+        if cid not in por_contacto:
+            por_contacto[cid] = {"id": cid, "mensajes": [], "_created": r.get("createdTime", "")}
+            orden.append(cid)
+        por_contacto[cid]["mensajes"].append({"rol": rol, "texto": texto})
+        por_contacto[cid]["_created"] = r.get("createdTime", "")
+    return [por_contacto[c] for c in orden]
+
+
+def _at_ping():
+    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE}/{TABLA_PEDIDOS}"
+    try:
+        r = requests.get(url, headers=_at_headers(), params={"maxRecords": 1}, timeout=10)
+    except Exception as e:
+        return False, f"No respondio ({e})."
+    if r.status_code == 200:
+        return True, "Conectado y respondiendo."
+    if r.status_code in (401, 403):
+        return False, "La clave de Airtable no tiene permiso."
+    if r.status_code == 404:
+        return False, "No encuentro la base o la tabla Pedidos."
+    return False, f"Error {r.status_code}."
+
+
+# ---------- RESUMEN / LOGIN ----------
+@app.get("/api/panel/resumen")
+def api_panel_resumen(x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    regs = _at_listar(TABLA_PEDIDOS)
+    hoy = datetime.now(_tz()).strftime("%d/%m/%Y")
+    nuevos = entregados = hoy_c = 0
+    for r in regs:
+        pe = _pedido_norm(r)
+        est = str(pe["estado"]).lower()
+        if est == "nuevo":
+            nuevos += 1
+        if est == "entregado":
+            entregados += 1
+        if str(pe["fecha"]).startswith(hoy):
+            hoy_c += 1
+    return {"total": len(regs), "hoy": hoy_c, "nuevos": nuevos, "entregados": entregados}
+
+
+# ---------- PEDIDOS ----------
+@app.get("/api/panel/pedidos")
+def api_panel_pedidos(x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    regs = _at_listar(TABLA_PEDIDOS)
+    norm = [_pedido_norm(r) for r in regs]
+    norm.sort(key=lambda p: p["_createdTime"], reverse=True)  # mas nuevos primero
+    return {"pedidos": [_pub(p) for p in norm]}
+
+
+@app.post("/api/panel/pedido")
+async def api_panel_nuevo_pedido(request: Request, x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    d = await request.json()
+    fecha = datetime.now(_tz()).strftime("%d/%m/%Y %H:%M")
+    fields = {
+        "Nombre": (d.get("nombre") or "").strip(),
+        "Ciudad": (d.get("ciudad") or "").strip(),
+        "Telefono": (d.get("telefono") or "").strip(),
+        "Producto": (d.get("producto") or "").strip(),
+        "Total": (d.get("total") or "").strip(),
+        "Estado": (d.get("estado") or "Nuevo").strip(),
+        "Direccion": (d.get("direccion") or "").strip(),
+        "Fecha": fecha,
+    }
+    ok, info = _at_crear(TABLA_PEDIDOS, fields)
+    return {"ok": True} if ok else {"ok": False, "error": str(info)[:300]}
+
+
+@app.post("/api/panel/estado")
+async def api_panel_estado(request: Request, x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    d = await request.json()
+    rec_id = (d.get("id") or "").strip()
+    estado = (d.get("estado") or "").strip()
+    if not rec_id or not estado:
+        return {"ok": False, "error": "Faltan datos"}
+    ok, info = _at_actualizar(TABLA_PEDIDOS, rec_id, {"Estado": estado})
+    return {"ok": True} if ok else {"ok": False, "error": str(info)[:200]}
+
+
+@app.post("/api/panel/aprobar-pedido")
+async def api_panel_aprobar(request: Request, x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    d = await request.json()
+    rec_id = (d.get("id") or "").strip()
+    if not rec_id:
+        return {"ok": False, "error": "Falta id"}
+    ok, info = _at_actualizar(TABLA_PEDIDOS, rec_id, {"Estado": "Pagado"})
+    return {"ok": True} if ok else {"ok": False, "error": str(info)[:200]}
+
+
+@app.get("/api/panel/reporte-dia")
+def api_panel_reporte_dia(x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    hoy = datetime.now(_tz()).strftime("%d/%m/%Y")
+    ped = []
+    facturado = 0
+    for r in _at_listar(TABLA_PEDIDOS):
+        pe = _pedido_norm(r)
+        if str(pe["fecha"]).startswith(hoy):
+            ped.append({
+                "nombre": pe["nombre"], "producto": pe["producto"],
+                "ciudad": pe["ciudad"], "total": pe["total"], "estado": pe["estado"]
+            })
+            facturado += _num(pe["total"])
+    return {"fecha": hoy, "cantidad": len(ped), "facturado": facturado, "pedidos": ped}
+
+
+@app.get("/api/panel/pendientes-pago")
+def api_panel_pendientes(x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    pend = []
+    for r in _at_listar(TABLA_PEDIDOS):
+        pe = _pedido_norm(r)
+        if str(pe["estado"]).lower() in ESTADOS_CERRADOS:
+            continue
+        dias = _hace_dias(_parse_fecha(pe["fecha"], pe["_createdTime"]))
+        pend.append({
+            "nombre": pe["nombre"], "producto": pe["producto"], "ciudad": pe["ciudad"],
+            "total": pe["total"], "estado": pe["estado"], "hace_dias": dias
+        })
+    pend.sort(key=lambda x: (x["hace_dias"] is None, -(x["hace_dias"] or 0)))
+    return {"pendientes": pend}
+
+
+@app.get("/api/panel/buscar")
+def api_panel_buscar(q: str = "", x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    q = (q or "").strip().lower()
+    if not q:
+        return {"resultados": []}
+    res = []
+    for r in _at_listar(TABLA_PEDIDOS):
+        pe = _pedido_norm(r)
+        blob = " ".join(str(pe[k]) for k in ("nombre", "ciudad", "telefono", "producto")).lower()
+        if q in blob:
+            res.append({
+                "nombre": pe["nombre"], "producto": pe["producto"], "ciudad": pe["ciudad"],
+                "telefono": pe["telefono"], "total": pe["total"], "estado": pe["estado"]
+            })
+    return {"resultados": res}
+
+
+@app.get("/api/panel/ventas-mes")
+def api_panel_ventas_mes(x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    acc = {}
+    for r in _at_listar(TABLA_PEDIDOS):
+        pe = _pedido_norm(r)
+        if str(pe["estado"]).lower() == "cancelado":
+            continue
+        dt = _parse_fecha(pe["fecha"], pe["_createdTime"])
+        if not dt:
+            continue
+        a = acc.setdefault((dt.year, dt.month), {"pedidos": 0, "facturado": 0})
+        a["pedidos"] += 1
+        a["facturado"] += _num(pe["total"])
+    meses = []
+    for (anio, mes) in sorted(acc.keys()):
+        a = acc[(anio, mes)]
+        meses.append({"mes": f"{MESES_ES[mes]} {anio}", "pedidos": a["pedidos"], "facturado": a["facturado"]})
+    return {"meses": meses}
+
+
+@app.get("/api/panel/ganancia")
+def api_panel_ganancia(x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    costo_por_nombre = {}
+    for c in _at_listar(TABLA_CATALOGO):
+        p = _prod_norm(c)
+        costo_por_nombre[str(p["nombre"]).strip().lower()] = _num(p["costo"])
+    agg = {}
+    total_gan = 0
+    for r in _at_listar(TABLA_PEDIDOS):
+        pe = _pedido_norm(r)
+        if str(pe["estado"]).lower() == "cancelado":
+            continue
+        prod = str(pe["producto"]).strip()
+        if not prod:
+            continue
+        costo = costo_por_nombre.get(prod.lower(), 0)
+        gan = _num(pe["total"]) - costo
+        a = agg.setdefault(prod, {"ventas": 0, "ganancia_total": 0, "costo_cargado": False})
+        a["ventas"] += 1
+        a["ganancia_total"] += gan
+        a["costo_cargado"] = a["costo_cargado"] or costo > 0
+        total_gan += gan
+    productos = []
+    for prod, a in agg.items():
+        productos.append({
+            "producto": prod,
+            "ventas": a["ventas"],
+            "ganancia_total": a["ganancia_total"],
+            "ganancia_unit": int(a["ganancia_total"] / a["ventas"]) if a["ventas"] else 0,
+            "costo_cargado": a["costo_cargado"],
+        })
+    productos.sort(key=lambda x: x["ganancia_total"], reverse=True)
+    return {"ganancia_total": total_gan, "productos": productos}
+
+
+# ---------- CATALOGO ----------
+@app.get("/api/panel/catalogo")
+def api_panel_catalogo(x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    return {"productos": [_prod_norm(r) for r in _at_listar(TABLA_CATALOGO)]}
+
+
+@app.delete("/api/panel/producto")
+async def api_panel_borrar_producto(request: Request, x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    d = await request.json()
+    rec_id = (d.get("id") or "").strip()
+    if not rec_id:
+        return {"ok": False, "error": "Falta id"}
+    ok, info = _at_borrar(TABLA_CATALOGO, rec_id)
+    return {"ok": True} if ok else {"ok": False, "error": str(info)[:200]}
+
+
+@app.patch("/api/panel/editar-producto")
+async def api_panel_editar_producto(request: Request, x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    d = await request.json()
+    rec_id = (d.get("id") or "").strip()
+    if not rec_id:
+        return {"ok": False, "error": "Falta id"}
+    fields = {}
+    if d.get("nombre"):
+        fields["nombre"] = d["nombre"]
+    if d.get("precio") not in (None, ""):
+        fields["precio_gs"] = d["precio"]
+    if "descripcion" in d:
+        fields["descripcion_corta"] = d.get("descripcion", "")
+    if d.get("stock"):
+        fields["stock_estado"] = d["stock"]
+    if not fields:
+        return {"ok": False, "error": "Nada para actualizar"}
+    ok, info = _at_actualizar(TABLA_CATALOGO, rec_id, fields)
+    return {"ok": True} if ok else {"ok": False, "error": str(info)[:200]}
+
+
+@app.post("/api/panel/editar-costo")
+async def api_panel_editar_costo(request: Request, x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    d = await request.json()
+    rec_id = (d.get("id") or "").strip()
+    if not rec_id:
+        return {"ok": False, "error": "Falta id"}
+    ok, info = _at_actualizar(TABLA_CATALOGO, rec_id, {"costo_gs": _num(d.get("costo"))})
+    return {"ok": True} if ok else {"ok": False, "error": str(info)[:200]}
+
+
+@app.get("/api/panel/stock-alerta")
+def api_panel_stock_alerta(x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    agotados = []
+    for r in _at_listar(TABLA_CATALOGO):
+        p = _prod_norm(r)
+        if "agotad" in str(p["stock"]).lower():
+            agotados.append(p["nombre"])
+    return {"hay_alerta": bool(agotados), "agotados": agotados, "stock_bajo": []}
+
+
+# ---------- CHARLAS / SEGUIMIENTO / FER ----------
+@app.get("/api/panel/conversaciones")
+def api_panel_conversaciones(x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    convs = _agrupar_conversaciones(_at_listar(TABLA))
+    out = []
+    for c in convs:
+        ultimo = c["mensajes"][-1]["texto"] if c["mensajes"] else ""
+        out.append({"id": c["id"], "ultimo": ultimo, "mensajes": c["mensajes"]})
+    out.reverse()
+    return {"conversaciones": out[:50]}
+
+
+@app.get("/api/panel/seguimiento-plus")
+def api_panel_seguimiento(x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    # Heuristica: prospectos que se engancharon (2+ mensajes del cliente).
+    seg = []
+    for c in _agrupar_conversaciones(_at_listar(TABLA)):
+        cli = sum(1 for m in c["mensajes"] if m["rol"] == "cliente")
+        if cli < 2:
+            continue
+        dt = None
+        if c.get("_created"):
+            try:
+                dt = datetime.fromisoformat(c["_created"].replace("Z", "+00:00"))
+            except Exception:
+                dt = None
+        seg.append({
+            "id": c["id"],
+            "mensajes": len(c["mensajes"]),
+            "hace_dias": _hace_dias(dt),
+            "ultimo": c["mensajes"][-1]["texto"] if c["mensajes"] else "",
+        })
+    seg.reverse()
+    return {"seguimiento": seg[:50]}
+
+
+@app.post("/api/panel/reenganche")
+async def api_panel_reenganche(request: Request, x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    d = await request.json()
+    ultimo = (d.get("ultimo") or "").strip()
+    prompt = (
+        "Sos Fer, vendedor paraguayo de Guaranistore. Escribi UN mensaje corto, "
+        "calido y natural (voseo paraguayo, 1-2 lineas, sin presionar) para reenganchar "
+        "a un cliente que dejo de responder. Su ultimo mensaje fue: "
+        + (ultimo or "(sin mensaje)")
+        + ". Devolve solo el mensaje, sin comillas ni explicaciones."
+    )
+    return {"mensaje": preguntar_a_gemini([], prompt, SYSTEM_PROMPT)}
+
+
+@app.post("/api/panel/postventa-mensaje")
+async def api_panel_postventa(request: Request, x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    d = await request.json()
+    tipo = (d.get("tipo") or "").strip()
+    nombre = (d.get("nombre") or "cliente").strip()
+    producto = (d.get("producto") or "tu pedido").strip()
+    guias = {
+        "camino": "avisale que su pedido ya va en camino y que quede atento",
+        "llego": "preguntale con onda si le llego el pedido y si esta todo bien",
+        "testimonio": "pedile con amabilidad una foto o comentario si quedo contento",
+        "recompra": "invitalo a volver a comprar u ofrecele otro producto, sin presionar",
+    }
+    guia = guias.get(tipo, "escribile un mensaje de seguimiento amable")
+    prompt = (
+        f"Sos Fer, vendedor paraguayo de Guaranistore. Escribi UN mensaje corto y calido "
+        f"(voseo paraguayo, 1-3 lineas) para {nombre} sobre '{producto}': {guia}. "
+        f"Devolve solo el mensaje, sin comillas ni explicaciones."
+    )
+    return {"mensaje": preguntar_a_gemini([], prompt, SYSTEM_PROMPT)}
+
+
+@app.get("/api/panel/analisis-charlas")
+def api_panel_analisis(x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    muestras = []
+    for c in _agrupar_conversaciones(_at_listar(TABLA)):
+        if any(m["rol"] == "cliente" for m in c["mensajes"]):
+            texto = "\n".join(
+                ("Cliente: " + m["texto"]) if m["rol"] == "cliente" else ("Fer: " + m["texto"])
+                for m in c["mensajes"][-12:]
+            )
+            muestras.append(texto)
+    muestras = muestras[-15:]
+    if not muestras:
+        return {"analisis": "Todavia no hay charlas suficientes para analizar.", "charlas_analizadas": 0}
+    prompt = (
+        "Sos analista de ventas. Te paso charlas reales entre Fer (vendedor) y clientes. "
+        "Deci en pocos puntos concretos donde se caen las ventas y que puede mejorar Fer. "
+        "Se breve, honesto y accionable. No inventes numeros.\n\n=== CHARLAS ===\n"
+        + "\n\n---\n\n".join(muestras)
+    )
+    return {"analisis": preguntar_a_gemini([], prompt, PROMPT_DUENO), "charlas_analizadas": len(muestras)}
+
+
+# ---------- DIAGNOSTICO / ACCIONES ----------
+@app.get("/api/panel/diagnostico")
+def api_panel_diagnostico(avisar: int = 0, x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    checks = []
+
+    def add(nombre, ok, detalle):
+        checks.append({"nombre": nombre, "estado": "ok" if ok else "falla", "detalle": detalle})
+
+    at_ok, at_det = _at_ping()
+    add("Airtable (base de datos)", at_ok, at_det)
+    add("Gemini (IA de Fer)", bool(GEMINI_KEY), "Clave cargada." if GEMINI_KEY else "Falta GEMINI_KEY.")
+    add("Messenger (Facebook)", bool(PAGE_TOKEN), "Token cargado." if PAGE_TOKEN else "Falta PAGE_TOKEN.")
+    add(
+        "Telegram (avisos)",
+        bool(TELEGRAM_TOKEN and TELEGRAM_CHAT),
+        "Configurado." if (TELEGRAM_TOKEN and TELEGRAM_CHAT) else "Falta token o chat."
+    )
+    add(
+        "WhatsApp (opcional)",
+        True,
+        "Configurado." if (WHATSAPP_DESTINO and CALLMEBOT_APIKEY) else "No configurado (opcional)."
+    )
+    fallas = sum(1 for c in checks if c["estado"] != "ok")
+    if avisar:
+        try:
+            resumen = "\n".join(
+                ("OK " if c["estado"] == "ok" else "!! ") + c["nombre"] + ": " + c["detalle"]
+                for c in checks
+            )
+            avisar_telegram("ESTADO DEL SISTEMA\n\n" + resumen)
+        except Exception:
+            pass
+    return {"salud": "todo_ok" if fallas == 0 else "revisar", "fallas": fallas, "checks": checks}
+
+
+@app.get("/api/panel/acciones")
+def api_panel_acciones(x_clave: str = Header(default="")):
+    if not _panel_ok(x_clave):
+        return _no_autorizado()
+    pedidos = [_pedido_norm(r) for r in _at_listar(TABLA_PEDIDOS)]
+    catalogo = [_prod_norm(r) for r in _at_listar(TABLA_CATALOGO)]
+    acciones = []
+
+    nuevos = [p for p in pedidos if str(p["estado"]).lower() == "nuevo"]
+    if nuevos:
+        acciones.append({
+            "prioridad": 1, "icono": "📦",
+            "titulo": f"Despachá {len(nuevos)} pedido(s) nuevo(s)",
+            "detalle": "Tenés ventas nuevas esperando que las mandes.",
+            "boton": "Ver pedidos", "grupo": "ventas", "sub": "pedidos"
+        })
+
+    atrasados = []
+    for p in pedidos:
+        if str(p["estado"]).lower() in ESTADOS_CERRADOS:
+            continue
+        dias = _hace_dias(_parse_fecha(p["fecha"], p["_createdTime"]))
+        if dias is not None and dias >= 2:
+            atrasados.append(p)
+    if atrasados:
+        acciones.append({
+            "prioridad": 1, "icono": "⏰",
+            "titulo": f"Cobrá {len(atrasados)} pedido(s) atrasado(s)",
+            "detalle": "Hace 2 dias o mas que estan sin cobrar.",
+            "boton": "Ver por cobrar", "grupo": "ventas", "sub": "pendientes"
+        })
+
+    sin_costo = [p for p in catalogo if _num(p["costo"]) <= 0]
+    if sin_costo:
+        acciones.append({
+            "prioridad": 2, "icono": "🏷️",
+            "titulo": f"Cargá el costo de {len(sin_costo)} producto(s)",
+            "detalle": "Sin costo no puedo calcular tu ganancia real.",
+            "boton": "Ir al catálogo", "grupo": "productos", "sub": ""
+        })
+
+    agotados = [p for p in catalogo if "agotad" in str(p["stock"]).lower()]
+    if agotados:
+        acciones.append({
+            "prioridad": 2, "icono": "⚠️",
+            "titulo": f"Reponé {len(agotados)} producto(s) agotado(s)",
+            "detalle": "Estas perdiendo ventas de lo que no tenes en stock.",
+            "boton": "Ir al catálogo", "grupo": "productos", "sub": ""
+        })
+
+    acciones.sort(key=lambda a: a["prioridad"])
+    return {"acciones": acciones}
+
+
 @app.get("/")
 def inicio():
 
