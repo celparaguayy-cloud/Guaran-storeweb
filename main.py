@@ -13,7 +13,8 @@ import traceback
 from datetime import datetime, timezone, timedelta
 
 import requests
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, Header
+from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
@@ -763,9 +764,9 @@ def revisar_producto(
 ):
 
     m = re.search(
-        r"CONSULTAR_PRODUCTO:\s*(.*?)",
+        r"CONSULTAR_PRODUCTO:\s*([^\]\n]+)",
         respuesta,
-        re.IGNORECASE | re.DOTALL
+        re.IGNORECASE
     )
 
     if not m:
@@ -815,10 +816,10 @@ def revisar_producto(
     )
 
     return re.sub(
-        r"CONSULTAR_PRODUCTO:.*?",
+        r"\[?\s*CONSULTAR_PRODUCTO:[^\]\n]*\]?",
         "",
         final,
-        flags=re.IGNORECASE | re.DOTALL
+        flags=re.IGNORECASE
     ).strip()
 
 
@@ -837,8 +838,9 @@ def revisar_stock(
 ):
 
     m = re.search(
-        r"CONSULTAR_STOCK:\s*(.*?)",
-        respuesta
+        r"CONSULTAR_STOCK:\s*([^\]\n]+)",
+        respuesta,
+        re.IGNORECASE
     )
 
     if not m:
@@ -868,7 +870,24 @@ def revisar_stock(
         "Respondele al cliente de forma natural "
         "y calida con ese dato. "
 
-        "No menciones etiquetas
+        "No menciones etiquetas, herramientas, "
+        "Airtable ni sistemas."
+    )
+
+    final = preguntar_a_gemini(
+        historial,
+        refuerzo,
+        SYSTEM_PROMPT
+    )
+
+    return re.sub(
+        r"\[?\s*CONSULTAR_STOCK:[^\]\n]*\]?",
+        "",
+        final,
+        flags=re.IGNORECASE
+    ).strip()
+
+
 # ================= MEMORIA (Airtable) =================
 
 def leer_historial(sender):
@@ -1481,8 +1500,8 @@ def inicio():
     }
 # ================= API PARA EL PANEL WEB =================
 
-@app.get("/api/dashboard")
-def api_dashboard():
+@app.get("/api/resumen")
+def api_resumen():
     return {
         "estado": "online",
         "pedidos": resumen_ventas(),
@@ -1606,3 +1625,289 @@ def dashboard():
             "error": str(e)
 
         }
+
+# ================= UTILIDADES DE PEDIDOS =================
+
+def _parsear(resumen):
+    """Convierte 'Producto: X | Precio: Y | Nombre: Z | ...' en un dict."""
+    datos = {}
+    for parte in resumen.split("|"):
+        if ":" not in parte:
+            continue
+        clave, valor = parte.split(":", 1)
+        clave = clave.strip().lower()
+        valor = valor.strip()
+        if clave.startswith("tel"):
+            clave = "tel"
+        elif clave.startswith("direc"):
+            clave = "direccion"
+        datos[clave] = valor
+    return datos
+
+
+def formatear_pedido(resumen):
+    """Texto lindo del pedido para avisar por Telegram."""
+    d = _parsear(resumen)
+
+    hora = datetime.now(
+        timezone(timedelta(hours=-3))
+    ).strftime("%d/%m/%Y %H:%M")
+
+    return (
+        "🛒 NUEVO PEDIDO\n\n"
+        f"📦 Producto: {d.get('producto', '-')}\n"
+        f"💵 Precio: {d.get('precio', '-')}\n"
+        f"👤 Cliente: {d.get('nombre', '-')}\n"
+        f"📍 Ciudad: {d.get('ciudad', '-')}\n"
+        f"📞 Tel: {d.get('tel', '-')}\n"
+        f"🏠 Direccion: {d.get('direccion', '-')}\n"
+        f"🕒 {hora} hs\n"
+        "💳 Pago contra entrega"
+    )
+
+
+def guardar_pedido(resumen):
+    """Guarda el pedido en la tabla Pedidos de Airtable."""
+    d = _parsear(resumen)
+
+    fecha = datetime.now(
+        timezone(timedelta(hours=-3))
+    ).strftime("%d/%m/%Y %H:%M")
+
+    url = (
+        f"https://api.airtable.com/v0/"
+        f"{AIRTABLE_BASE}/{TABLA_PEDIDOS}"
+    )
+
+    headers = {
+        "Authorization": f"Bearer {AIRTABLE_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    cuerpo = {
+        "fields": {
+            "Nombre": d.get("nombre", ""),
+            "Ciudad": d.get("ciudad", ""),
+            "Telefono": d.get("tel", ""),
+            "Producto": d.get("producto", ""),
+            "Total": d.get("precio", ""),
+            "Estado": "Nuevo",
+            "Fecha": fecha
+        },
+        "typecast": True
+    }
+
+    try:
+        r = requests.post(
+            url,
+            headers=headers,
+            json=cuerpo,
+            timeout=10
+        )
+
+        if r.status_code not in (200, 201):
+            print(
+                ">>> AIRTABLE (guardar_pedido) error:",
+                r.status_code,
+                r.text
+            )
+
+    except Exception as e:
+        print(">>> guardar_pedido error:", e)
+
+
+# ================= MULTIMEDIA =================
+
+def revisar_fotos(respuesta):
+    """Detecta [FOTOS] / [MASFOTOS], las quita del texto y
+    devuelve (texto_limpio, lista_de_urls)."""
+    fotos = []
+
+    if "[MASFOTOS]" in respuesta.upper():
+        fotos.extend(
+            BASE_FOTOS + nombre
+            for nombre in FOTOS_EXTRA
+        )
+
+    if "[FOTOS]" in respuesta.upper():
+        fotos = [
+            BASE_FOTOS + nombre
+            for nombre in FOTOS_PRINCIPALES
+        ] + fotos
+
+    limpio = re.sub(
+        r"\[(FOTOS|MASFOTOS)\]",
+        "",
+        respuesta,
+        flags=re.IGNORECASE
+    ).strip()
+
+    return limpio, fotos
+
+
+def revisar_video(respuesta):
+    """Detecta [VIDEO], lo quita del texto y devuelve
+    (texto_limpio, url_video_o_vacio)."""
+    video = ""
+
+    if "[VIDEO]" in respuesta.upper():
+        video = VIDEO_URL
+
+    limpio = re.sub(
+        r"\[VIDEO\]",
+        "",
+        respuesta,
+        flags=re.IGNORECASE
+    ).strip()
+
+    return limpio, video
+
+
+# ================= REPORTES PARA MODO DUENO / PANEL =================
+
+def resumen_ventas():
+    """Texto con un resumen real de las ventas desde Airtable."""
+    url = (
+        f"https://api.airtable.com/v0/"
+        f"{AIRTABLE_BASE}/{TABLA_PEDIDOS}"
+    )
+
+    headers = {
+        "Authorization": f"Bearer {AIRTABLE_KEY}"
+    }
+
+    try:
+        r = requests.get(
+            url,
+            headers=headers,
+            params={"maxRecords": 1000},
+            timeout=10
+        )
+    except Exception as e:
+        return f"No pude leer los pedidos ahora ({e})."
+
+    if r.status_code != 200:
+        return "No pude leer los pedidos en este momento."
+
+    registros = r.json().get("records", [])
+
+    hoy = datetime.now(
+        timezone(timedelta(hours=-3))
+    ).strftime("%d/%m/%Y")
+
+    total = len(registros)
+    hoy_count = 0
+    ciudades = {}
+    ultimos = []
+
+    for reg in registros:
+        campos = reg.get("fields", {})
+
+        fecha = str(campos.get("Fecha", ""))
+        if fecha.startswith(hoy):
+            hoy_count += 1
+
+        ciudad = str(campos.get("Ciudad", "")).strip()
+        if ciudad:
+            ciudades[ciudad] = ciudades.get(ciudad, 0) + 1
+
+    for reg in registros[-5:]:
+        campos = reg.get("fields", {})
+        ultimos.append(
+            f"- {campos.get('Nombre', '?')} "
+            f"({campos.get('Ciudad', '?')}) "
+            f"{campos.get('Producto', '')} "
+            f"{campos.get('Total', '')}"
+        )
+
+    top_ciudades = sorted(
+        ciudades.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )[:5]
+
+    partes = [
+        "=== RESUMEN DE VENTAS ===",
+        f"Total de pedidos: {total}",
+        f"Pedidos de hoy: {hoy_count}",
+    ]
+
+    if top_ciudades:
+        partes.append(
+            "Ciudades con mas pedidos: "
+            + ", ".join(
+                f"{c} ({n})"
+                for c, n in top_ciudades
+            )
+        )
+
+    if ultimos:
+        partes.append("Ultimos pedidos:")
+        partes.extend(ultimos)
+
+    return "\n".join(partes)
+
+
+def leer_conversaciones(limite=40):
+    """Texto con las conversaciones recientes desde Airtable."""
+    url = (
+        f"https://api.airtable.com/v0/"
+        f"{AIRTABLE_BASE}/{TABLA}"
+    )
+
+    headers = {
+        "Authorization": f"Bearer {AIRTABLE_KEY}"
+    }
+
+    try:
+        r = requests.get(
+            url,
+            headers=headers,
+            params={"maxRecords": limite},
+            timeout=10
+        )
+    except Exception as e:
+        return f"No pude leer las conversaciones ahora ({e})."
+
+    if r.status_code != 200:
+        return "No pude leer las conversaciones en este momento."
+
+    lineas = []
+
+    for reg in r.json().get("records", []):
+        campos = reg.get("fields", {})
+        contacto = campos.get("contact_id", "?")
+        mensaje = campos.get("mensaje_entrante", "")
+        if mensaje:
+            lineas.append(f"[{contacto}] {mensaje}")
+
+    if not lineas:
+        return "(Sin conversaciones registradas todavia.)"
+
+    return "\n".join(lineas[-limite:])
+
+
+# ================= SEGURIDAD DEL PANEL =================
+
+def _clave_panel():
+    """Clave valida para el panel (usa CLAVE_DUENO o PANEL_CLAVE)."""
+    return (
+        CLAVE_DUENO
+        or os.environ.get("PANEL_CLAVE", "").strip().lower()
+    )
+
+
+def _panel_ok(x_clave):
+    """True si la clave enviada por el panel es correcta."""
+    clave = _clave_panel()
+    if not clave:
+        return False
+    return (x_clave or "").strip().lower() == clave
+
+
+def _no_autorizado():
+    """Respuesta estandar cuando la clave del panel es incorrecta."""
+    return JSONResponse(
+        {"ok": False, "error": "Clave incorrecta o panel sin clave configurada."},
+        status_code=401
+    )
