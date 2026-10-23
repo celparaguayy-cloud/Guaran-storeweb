@@ -1,26 +1,17 @@
-# Guaranístore · Fer Bot Control
+# Guaranístore · Novva
 
-Este paquete contiene la primera versión visual del panel de control para Fer Bot.
+Panel web y bot de ventas para páginas de Facebook. Un solo bot atiende a
+varios negocios a la vez; Guaranístore sigue con sus variables de siempre.
 
-Incluye:
-- Resumen del negocio
-- Pedidos
-- Chat en vivo para observar conversaciones
-- Auditor de Fer
-- Catálogo
-- Diseño responsive para celular y computadora
+| Archivo | Qué es |
+|---|---|
+| `index.html` | El panel Novva. Con tu clave ves Guaranístore; con la de un cliente, solo lo suyo. |
+| `admin.html` | Tu página para cargar, editar, pausar y revisar cada negocio. |
+| `oferta.html` | La página para mostrarle Novva a los negocios. |
+| `privacidad.html`, `borrar-datos.html` | Las páginas que pide Meta. |
+| `prompt-novva.txt` | El vendedor de tu página Novva. |
+| `bot/main.py` | El bot (va en Render, repo `guaranistorebot`). |
+| `bot/test_bot.py` | Pruebas con todos los servicios simulados: `cd bot && python3 test_bot.py`. |
 
-## Importante
-
-Esta versión incluye datos de demostración para mostrar la interfaz.
-
-El siguiente paso es conectarla a los datos reales del `main.py` y Airtable mediante una API segura. No conviene poner las claves de Airtable, Gemini o Telegram dentro del navegador.
-
-La idea recomendada es:
-
-1. Mantener tu `main.py` del bot sin tocar su funcionamiento.
-2. Crear un pequeño servicio/API separado para el panel.
-3. Ese servicio usa las mismas variables de entorno y lee Airtable de forma segura.
-4. El panel consulta esa API y muestra datos reales.
-5. Luego se puede desplegar gratis en Render y conectar un dominio.
-
+**Cómo ponerlo en marcha:** seguí [`GUIA-MULTICLIENTE.md`](GUIA-MULTICLIENTE.md),
+fase por fase.
