@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Novva · Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0E1A; --bg2:#0F1424; --card:#151B30; --line:#262E48;
+    --ink:#EDF0FA; --muted:#949DBB;
+    --cyan:#4C8DFF; --violet:#9B7DFF; --amber:#E0A94A; --green:#34D399; --rose:#F58BB0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg); color:var(--ink); font-family:"Inter",system-ui,sans-serif; -webkit-font-smoothing:antialiased; line-height:1.5; padding-bottom:46px;
+    background-image:radial-gradient(90% 45% at 15% 0%, rgba(76,141,255,.13), transparent 60%), radial-gradient(75% 40% at 88% 3%, rgba(155,125,255,.12), transparent 55%)}
+  .wrap{max-width:560px; margin:0 auto; padding:0 16px}
+  h1,h2,h3,.brand,.logo{font-family:"Fraunces",Georgia,serif}
+  .hidden{display:none !important}
+  @keyframes fade{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
+  button{font-family:inherit; cursor:pointer}
+  input,textarea,select{font-family:inherit}
+
+  #login{min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:24px; text-align:center}
+  .login-card{width:100%; max-width:340px; display:flex; flex-direction:column; align-items:center; background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--line); border-radius:22px; padding:34px 26px 28px; box-shadow:0 20px 50px rgba(0,0,0,.35)}
+  .login-mark{width:56px; height:56px; margin-bottom:14px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-family:"Fraunces",serif; font-weight:700; font-size:26px; color:#02101F; background:linear-gradient(135deg,var(--cyan),var(--violet))}
+  .logo{font-weight:700; font-size:40px; letter-spacing:-.02em; background:linear-gradient(120deg,var(--cyan),var(--violet)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
+  .tag{color:var(--muted); margin:6px 0 26px; font-size:15px}
+  #login input[type=password],#login input[type=text]{width:100%; padding:15px 16px; border:1.5px solid var(--line); border-radius:13px; font-size:16px; text-align:center; background:var(--card); color:var(--ink)}
+  #login input:focus{outline:none; border-color:var(--cyan); box-shadow:0 0 0 4px rgba(76,141,255,.15)}
+  .remember{display:flex; align-items:center; justify-content:center; gap:8px; margin:13px auto 2px; color:var(--muted); font-size:13.5px; cursor:pointer; user-select:none}
+  .remember input{accent-color:var(--cyan)}
+  .btn-main{width:100%; margin-top:12px; padding:15px; border:none; border-radius:13px; background:linear-gradient(120deg,var(--cyan),#2563EB); color:#02101F; font-size:16px; font-weight:700; box-shadow:0 4px 14px rgba(0,0,0,.26); transition:transform .12s ease}
+  .btn-main:active{transform:scale(.97)}
+  .btn-main:disabled{opacity:.6}
+  .err{color:var(--rose); font-size:14px; margin-top:14px; min-height:18px}
+
+  header{background:linear-gradient(135deg,var(--bg2),var(--bg)); border-bottom:1px solid var(--line); padding:20px 0 16px}
+  header .wrap{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .brand{font-weight:700; font-size:23px; letter-spacing:-.02em; background:linear-gradient(120deg,var(--cyan),var(--violet)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
+  .brand-tag{font-size:11px; color:var(--muted); letter-spacing:.14em; text-transform:uppercase; margin-top:2px}
+  .salir{border:1px solid var(--line); background:none; color:var(--muted); font-size:13px; font-weight:600; padding:8px 12px; border-radius:10px}
+
+  main{padding-top:16px}
+  .avisos{display:flex; flex-direction:column; gap:8px; margin-bottom:6px}
+  .aviso{border-radius:12px; padding:11px 13px; font-size:13.5px; border:1px solid var(--line); background:var(--card); color:var(--muted)}
+  .aviso b{color:var(--ink)}
+  .aviso.mal{background:rgba(245,139,176,.1); border-color:rgba(245,139,176,.3); color:var(--rose)}
+  .sec-h{display:flex; align-items:center; justify-content:space-between; margin:18px 2px 14px}
+  .sec-h h2{font-family:"Inter",sans-serif; font-size:14.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; position:relative; padding-left:13px}
+  .sec-h h2::before{content:""; position:absolute; left:0; top:52%; transform:translateY(-50%); width:4px; height:15px; border-radius:3px; background:linear-gradient(180deg,var(--cyan),var(--violet))}
+  .add{border:none; background:linear-gradient(120deg,var(--amber),#F59E0B); color:#2A1B00; font-weight:700; font-size:13px; padding:10px 15px; border-radius:11px; box-shadow:0 3px 11px rgba(224,169,74,.26)}
+
+  .card{background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--line); border-radius:16px; padding:16px 17px; margin-bottom:11px; box-shadow:0 2px 10px rgba(0,0,0,.24)}
+  .card.pausado{opacity:.72}
+  .card .top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px}
+  .card .who{font-weight:600; font-size:16px}
+  .card .sub{color:var(--muted); font-size:13px; margin-top:2px; word-break:break-word}
+  .card .meta{color:var(--muted); font-size:13px; margin-top:10px; line-height:1.65; word-break:break-word}
+  .card .meta b{color:var(--ink); font-weight:600}
+  .badge{display:inline-block; font-size:11.5px; font-weight:600; padding:3px 10px; border-radius:20px; white-space:nowrap}
+  .b-ok{background:rgba(52,211,153,.16); color:var(--green)}
+  .b-warn{background:rgba(224,169,74,.16); color:var(--amber)}
+  .b-off{background:rgba(245,139,176,.16); color:var(--rose)}
+  .b-tu{background:rgba(76,141,255,.16); color:var(--cyan)}
+  .acc{display:flex; gap:7px; flex-wrap:wrap; margin-top:13px}
+  .mini{flex:1 1 auto; font-size:12.5px; font-weight:600; padding:9px 10px; border-radius:10px; border:1px solid var(--line); background:var(--bg2); color:var(--ink); transition:transform .12s ease}
+  .mini:active{transform:scale(.95)}
+  .mini.rojo{flex:0 0 auto; color:var(--rose); border-color:transparent; background:rgba(245,139,176,.12)}
+  .mini.verde{color:#04231A; background:var(--green); border-color:var(--green)}
+  .empty{text-align:center; color:var(--muted); padding:30px 18px; border:1px dashed var(--line); border-radius:16px}
+  .empty .big{font-family:"Fraunces"; font-size:19px; color:var(--ink); margin-bottom:6px}
+  .loading{text-align:center; color:var(--muted); padding:30px; font-size:14px}
+
+  .modal-bg{position:fixed; inset:0; background:rgba(2,8,18,.72); display:none; align-items:flex-end; z-index:20}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--bg2); width:100%; max-width:560px; margin:0 auto; border-radius:22px 22px 0 0; padding:22px 18px 30px; max-height:94vh; overflow:auto; border-top:1px solid var(--line); animation:fade .25s ease both}
+  .modal h3{font-size:21px; margin-bottom:4px}
+  .modal .lead{color:var(--muted); font-size:13.5px; margin-bottom:6px}
+  .grupo-f{border-top:1px solid var(--line); margin-top:18px; padding-top:6px}
+  .grupo-f > .gt{font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--cyan); margin-top:10px}
+  .modal label{display:block; font-size:13px; font-weight:600; color:var(--muted); margin:12px 0 5px}
+  .modal label small{font-weight:500; opacity:.85}
+  .modal input, .modal textarea, .modal select{width:100%; padding:12px 13px; border:1.5px solid var(--line); border-radius:12px; font-size:15px; background:var(--card); color:var(--ink)}
+  .modal textarea{min-height:92px; resize:vertical; line-height:1.45}
+  .modal textarea.alto{min-height:170px}
+  .modal input::placeholder, .modal textarea::placeholder{color:var(--muted); opacity:.8}
+  .modal input:focus, .modal textarea:focus{outline:none; border-color:var(--cyan)}
+  .con-boton{display:flex; gap:8px}
+  .con-boton input{flex:1; min-width:0}
+  .con-boton button{flex:0 0 auto; border:1px solid var(--line); background:var(--card); color:var(--cyan); font-weight:700; font-size:13px; padding:0 13px; border-radius:12px}
+  .ayuda{font-size:12.5px; color:var(--muted); margin-top:6px; line-height:1.5}
+  .ayuda a{color:var(--cyan)}
+  .info{margin-top:10px; border-radius:12px; padding:11px 13px; font-size:13.5px; background:var(--card); border:1px solid var(--line)}
+  .info.ok{border-color:rgba(52,211,153,.4)}
+  .info.mal{border-color:rgba(245,139,176,.4); color:var(--rose)}
+  .info .warn{color:var(--amber); margin-top:4px}
+  .pag-op{display:block; width:100%; text-align:left; margin-top:8px; padding:12px 13px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--ink); font-size:14.5px; font-weight:600}
+  .pag-op small{display:block; color:var(--muted); font-weight:500; font-size:12px}
+  details{margin-top:16px; border:1px solid var(--line); border-radius:13px; padding:4px 13px 12px; background:rgba(21,27,48,.5)}
+  details summary{cursor:pointer; padding:9px 0 3px; font-size:13.5px; font-weight:600; color:var(--muted)}
+  .actions{display:flex; gap:10px; margin-top:22px; position:sticky; bottom:-30px; background:var(--bg2); padding:10px 0 4px}
+  .save{flex:1; padding:14px; border:none; border-radius:13px; background:linear-gradient(120deg,var(--cyan),#2563EB); color:#02101F; font-weight:700; font-size:15px}
+  .save:disabled{opacity:.6}
+  .cancel{padding:14px 18px; border:1.5px solid var(--line); border-radius:13px; background:var(--card); color:var(--ink); font-weight:600}
+  .form-err{margin-top:12px; color:var(--rose); font-size:13.5px}
+  .check{display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:14px}
+  .check:last-child{border-bottom:none}
+  .check .ic{flex:0 0 auto}
+  .check .d{color:var(--muted); font-size:13px}
+  .listo{background:var(--card); border:1px solid rgba(52,211,153,.4); border-radius:14px; padding:14px; font-size:14px; margin-top:12px; word-break:break-word}
+  .listo code{background:var(--bg); padding:2px 7px; border-radius:7px; font-size:14px}
+  #toast{position:fixed; left:50%; bottom:26px; transform:translate(-50%,20px); background:var(--ink); color:var(--bg); font-weight:600; font-size:14px; padding:12px 18px; border-radius:13px; box-shadow:0 8px 26px rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:.25s; z-index:40; max-width:90vw; text-align:center}
+  #toast.show{opacity:1; transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="login-card">
+    <div class="login-mark">N</div>
+    <div class="logo">Novva</div>
+    <div class="tag">Admin de negocios</div>
+    <input id="clave" type="password" placeholder="Tu clave de admin" autocomplete="current-password" />
+    <label class="remember"><input type="checkbox" id="recordar" /> Recordar en este celu</label>
+    <button class="btn-main" id="entrar">Entrar</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <div class="wrap">
+      <div><div class="brand">Novva</div><div class="brand-tag">Admin de negocios</div></div>
+      <button class="salir" id="salir">Salir</button>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="avisos" id="avisos"></div>
+    <div class="sec-h"><h2>Tus negocios</h2><button class="add" id="nuevo">+ Nuevo</button></div>
+    <div id="lista"><div class="loading">Cargando…</div></div>
+  </main>
+</div>
+
+<!-- Formulario de negocio -->
+<div class="modal-bg" id="mForm">
+  <div class="modal">
+    <h3 id="fTitulo">Nuevo negocio</h3>
+    <div class="lead">Lo que dejes vacío usa lo tuyo (tu Gemini, tu Airtable, tu bot de Telegram).</div>
+
+    <div class="grupo-f">
+      <div class="gt">El negocio</div>
+      <label>Nombre del negocio</label>
+      <input id="f-nombre" placeholder="Ej: Bella Cosmética" />
+      <label>Nombre del vendedor <small>(cómo se presenta el bot)</small></label>
+      <input id="f-vendedor" placeholder="Fer" />
+      <label>Clave del panel <small>(se la pasás al cliente)</small></label>
+      <div class="con-boton"><input id="f-clave_panel" placeholder="8 letras o más" autocomplete="off" /><button type="button" id="genClave">Inventar</button></div>
+      <label>Palabra secreta del dueño <small>(opcional, para el modo dueño en Messenger)</small></label>
+      <input id="f-clave_dueno" placeholder="Ej: soyeldueno" autocomplete="off" />
+    </div>
+
+    <div class="grupo-f">
+      <div class="gt">Página de Facebook</div>
+      <label>Token de la persona <small>(del Graph API Explorer)</small></label>
+      <div class="con-boton"><input id="f-user_token" placeholder="EAAG…" autocomplete="off" /><button type="button" id="buscarPag">Buscar mis páginas</button></div>
+      <div class="ayuda">Es lo más fácil: trae las páginas que manejás, cada una con su token. Si cargaste <b>META_APP_ID</b> y <b>META_APP_SECRET</b> en Render, esos tokens no vencen.</div>
+      <div id="paginas"></div>
+      <label>Token de la página</label>
+      <div class="con-boton"><input id="f-page_token" placeholder="EAAG…" autocomplete="off" /><button type="button" id="validar">Validar con Meta</button></div>
+      <div id="tokInfo"></div>
+    </div>
+
+    <div class="grupo-f">
+      <div class="gt">Airtable y avisos</div>
+      <label>Base de Airtable <small>(empieza con «app»)</small></label>
+      <input id="f-airtable_base" placeholder="appXXXXXXXXXXXXXX" autocomplete="off" />
+      <div class="ayuda">Tiene que tener las tablas Pedidos, Catalogo_Espejo y Conversaciones (copiá la de Guaranístore).</div>
+      <label>Chat de Telegram para los avisos <small>(opcional)</small></label>
+      <input id="f-telegram_chat" placeholder="Ej: 123456789" autocomplete="off" />
+      <div class="ayuda">Sin chat, los pedidos de este negocio no avisan a nadie (nunca a tu Telegram).</div>
+    </div>
+
+    <div class="grupo-f">
+      <div class="gt">Cómo vende</div>
+      <label>Forma de vender <small>(opcional)</small></label>
+      <textarea id="f-prompt" class="alto" placeholder="Vacío = la forma de vender de Guaranístore, con el nombre de este negocio.&#10;&#10;Si escribís una propia, contá quién es el vendedor, qué vende, cómo habla y cómo son los envíos y pagos. Las etiquetas de fotos y pedidos se agregan solas."></textarea>
+      <label>Fotos <small>(un link por línea; las 3 primeras van primero)</small></label>
+      <textarea id="f-fotos" placeholder="https://…/foto1.jpg"></textarea>
+      <label>Video <small>(opcional)</small></label>
+      <input id="f-video" placeholder="https://youtube.com/shorts/…" />
+      <label>Costo de envío al interior (Gs.)</label>
+      <input id="f-envio_interior" inputmode="numeric" placeholder="25000" />
+    </div>
+
+    <details>
+      <summary>Más opciones</summary>
+      <label>Clave de Airtable propia <small>(vacío = la tuya)</small></label>
+      <input id="f-airtable_key" placeholder="pat…" autocomplete="off" />
+      <label>Token de un bot de Telegram propio <small>(vacío = el tuyo)</small></label>
+      <input id="f-telegram_token" placeholder="123:ABC…" autocomplete="off" />
+      <label>Clave de Gemini propia <small>(vacío = la tuya)</small></label>
+      <input id="f-gemini_key" placeholder="AIza…" autocomplete="off" />
+      <label>WhatsApp para avisos (CallMeBot)</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><input id="f-whatsapp_destino" placeholder="595981…" /><input id="f-callmebot_apikey" placeholder="apikey" autocomplete="off" /></div>
+    </details>
+
+    <label>Notas <small>(solo las ves vos)</small></label>
+    <input id="f-notas" placeholder="Ej: paga el 5 de cada mes" />
+
+    <div class="form-err" id="fErr"></div>
+    <div class="actions"><button class="cancel" data-close>Cerrar</button><button class="save" id="guardar">Guardar</button></div>
+  </div>
+</div>
+
+<!-- Resultado (revisar / listo) -->
+<div class="modal-bg" id="mRes">
+  <div class="modal">
+    <h3 id="rTitulo">Revisión</h3>
+    <div id="rCuerpo"></div>
+    <div class="actions"><button class="save" data-close>Listo</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const BACKEND = "https://guaranistorebot.onrender.com";
+const PANEL = "https://celparaguayy-cloud.github.io/Guaran-storeweb/";
+const $ = s => document.querySelector(s);
+const wait = ms => new Promise(r => setTimeout(r, ms));
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function toast(t){ const e=$("#toast"); e.textContent=t; e.classList.add("show"); clearTimeout(e._t); e._t=setTimeout(()=>e.classList.remove("show"),2600); }
+function abrir(id){ $("#"+id).classList.add("show"); }
+function cerrar(id){ $("#"+id).classList.remove("show"); }
+document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => b.closest(".modal-bg").classList.remove("show"));
+
+let CLAVE = "", NEGOCIOS = [], INFO = {}, EDIT = null;
+const CAMPOS = ["nombre","vendedor","clave_panel","clave_dueno","page_token","airtable_base","telegram_chat",
+                "prompt","fotos","video","envio_interior","airtable_key","telegram_token","gemini_key","whatsapp_destino","callmebot_apikey","notas"];
+const SECRETOS = ["page_token","airtable_key","telegram_token","gemini_key","callmebot_apikey"];
+
+async function api(path, opts){
+  opts = opts || {};
+  const r = await fetch(BACKEND+path, Object.assign({}, opts, {headers:{"Content-Type":"application/json","X-Admin":CLAVE}}));
+  if(r.status===401) throw new Error("401");
+  return r.json();
+}
+function post(path, body){ return api(path, {method:"POST", body:JSON.stringify(body||{})}); }
+
+// ---- entrar (con reintento: Render se duerme en el plan gratis) ----
+$("#entrar").onclick = entrar;
+$("#clave").addEventListener("keydown", e => { if(e.key==="Enter") entrar(); });
+try{ const c = localStorage.getItem("novva_admin") || sessionStorage.getItem("novva_admin"); if(c){ $("#clave").value=c; $("#recordar").checked=!!localStorage.getItem("novva_admin"); setTimeout(entrar,150); } }catch(e){}
+async function entrar(){
+  CLAVE = $("#clave").value.trim(); $("#loginErr").textContent = "";
+  if(!CLAVE){ $("#loginErr").textContent = "Escribí tu clave de admin"; return; }
+  const btn = $("#entrar"); btn.disabled = true;
+  for(let i=1;i<=4;i++){
+    btn.textContent = i===1 ? "Entrando…" : "Despertando el servidor… ("+i+"/4)";
+    try{
+      const r = await fetch(BACKEND+"/api/admin/negocios", {headers:{"X-Admin":CLAVE}});
+      if(r.status===401){ olvidar(); $("#loginErr").textContent = "Clave incorrecta (o falta ADMIN_CLAVE en Render)"; break; }
+      if(r.status===404){ $("#loginErr").textContent = "El bot nuevo todavía no está subido a Render."; break; }
+      if(!r.ok) throw new Error("http");
+      try{ sessionStorage.setItem("novva_admin", CLAVE); if($("#recordar").checked) localStorage.setItem("novva_admin", CLAVE); else localStorage.removeItem("novva_admin"); }catch(e){}
+      INFO = await r.json(); NEGOCIOS = INFO.negocios || [];
+      $("#login").classList.add("hidden"); $("#app").classList.remove("hidden"); pintar();
+      break;
+    }catch(e){
+      if(i<4){ await wait(4000); continue; }
+      $("#loginErr").textContent = "No pude conectar. Si el bot estaba dormido, esperá un minuto y probá de nuevo.";
+    }
+  }
+  btn.disabled = false; btn.textContent = "Entrar";
+}
+function olvidar(){ try{ localStorage.removeItem("novva_admin"); sessionStorage.removeItem("novva_admin"); }catch(e){} }
+$("#salir").onclick = () => { olvidar(); location.reload(); };
+
+async function recargar(){
+  try{ INFO = await api("/api/admin/negocios"); NEGOCIOS = INFO.negocios || []; pintar(); }
+  catch(e){ if(e.message==="401") location.reload(); else toast("No pude actualizar la lista"); }
+}
+
+// ---- lista ----
+function pintar(){
+  const av = [];
+  if(!INFO.upstash) av.push('<div class="aviso mal"><b>Falta Upstash.</b> Sin UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN en Render no se pueden guardar negocios.</div>');
+  if(!INFO.meta_app) av.push('<div class="aviso"><b>Tip:</b> cargá META_APP_ID y META_APP_SECRET en Render para sacar tokens de página que no vencen.</div>');
+  $("#avisos").innerHTML = av.join("");
+  if(NEGOCIOS.length <= 1){
+    $("#lista").innerHTML = NEGOCIOS.map(tarjeta).join("") + '<div class="empty"><div class="big">Todavía no cargaste clientes</div>Tocá «+ Nuevo» para sumar el primero.</div>';
+  } else {
+    $("#lista").innerHTML = NEGOCIOS.map(tarjeta).join("");
+  }
+  document.querySelectorAll("[data-acc]").forEach(b => b.onclick = () => accion(b.dataset.acc, b.dataset.id));
+}
+function tarjeta(n){
+  const badge = n.principal ? '<span class="badge b-tu">Tuyo</span>'
+    : n.estado==="pausado" ? '<span class="badge b-off">Pausado</span>'
+    : n.estado==="sin_conectar" ? '<span class="badge b-warn">Sin página</span>'
+    : '<span class="badge b-ok">Activo</span>';
+  const fila = (k, v) => v ? '<b>'+k+':</b> '+esc(v)+'<br>' : '';
+  let meta = fila("Página", n.page_id) + fila("Airtable", n.airtable_base) + fila("Telegram", n.telegram_chat);
+  if(!n.principal) meta += fila("Clave del panel", n.clave_panel) + fila("Notas", n.notas) + fila("Alta", n.creado);
+  const btn = (acc, txt, cls) => '<button class="mini '+(cls||"")+'" data-acc="'+acc+'" data-id="'+esc(n.id)+'">'+txt+'</button>';
+  const botones = n.principal ? btn("revisar","Revisar")
+    : btn("editar","Editar") + btn("revisar","Revisar") + btn("conectar","Conectar página")
+      + (n.activo ? btn("pausar","Pausar") : btn("reanudar","Reanudar","verde")) + btn("compartir","Pasar acceso") + btn("borrar","🗑","rojo");
+  return '<div class="card'+(n.activo?'':' pausado')+'"><div class="top"><div><div class="who">'+esc(n.nombre)+'</div>'
+    + '<div class="sub">'+(n.principal ? 'Usa las variables de Render de siempre' : 'Vendedor: '+esc(n.vendedor||"Fer"))+'</div></div>'+badge+'</div>'
+    + '<div class="meta">'+meta+'</div><div class="acc">'+botones+'</div></div>';
+}
+
+async function accion(acc, id){
+  const n = NEGOCIOS.find(x => x.id===id); if(!n) return;
+  try{
+    if(acc==="editar") return abrirForm(n);
+    if(acc==="revisar") return revisar(n);
+    if(acc==="compartir") return compartir(n);
+    if(acc==="conectar"){
+      toast("Conectando…");
+      const r = await post("/api/admin/conectar", {id});
+      return toast(r.ok ? "✅ Página conectada: ya le llegan los mensajes al bot" : "No se pudo: "+(r.error||""));
+    }
+    if(acc==="pausar" || acc==="reanudar"){
+      const activo = acc==="reanudar";
+      if(!activo && !confirm("¿Pausar "+n.nombre+"? El bot deja de contestarle a sus clientes y su panel queda bloqueado.")) return;
+      const r = await post("/api/admin/pausar", {id, activo});
+      if(!r.ok) return toast("No se pudo: "+(r.error||""));
+      toast(activo ? "▶️ "+n.nombre+" vuelve a atender" : "⏸ "+n.nombre+" quedó pausado"); return recargar();
+    }
+    if(acc==="borrar"){
+      const escrito = prompt("Esto saca a "+n.nombre+" del bot (su Airtable no se toca).\nPara confirmar, escribí su nombre:");
+      if(escrito===null) return;
+      if(escrito.trim().toLowerCase() !== String(n.nombre).trim().toLowerCase()) return toast("El nombre no coincide: no borré nada");
+      const r = await post("/api/admin/borrar-negocio", {id});
+      toast(r.ok ? "Borrado" : "No se pudo: "+(r.error||"")); return recargar();
+    }
+  }catch(e){ if(e.message==="401") location.reload(); else toast("Error de conexión"); }
+}
+
+async function revisar(n){
+  $("#rTitulo").textContent = "Revisión · "+n.nombre;
+  $("#rCuerpo").innerHTML = '<div class="loading">Revisando Airtable, Meta y Gemini…</div>'; abrir("mRes");
+  try{
+    const r = await api("/api/admin/revisar?id="+encodeURIComponent(n.id));
+    if(r.error){ $("#rCuerpo").innerHTML = '<div class="info mal">'+esc(r.error)+'</div>'; return; }
+    $("#rCuerpo").innerHTML = (r.checks||[]).map(c => '<div class="check"><div class="ic">'+(c.estado==="ok"?"✅":"⚠️")+'</div><div><div>'+esc(c.nombre)+'</div><div class="d">'+esc(c.detalle)+'</div></div></div>').join("");
+  }catch(e){ $("#rCuerpo").innerHTML = '<div class="info mal">No pude revisar. Probá de nuevo.</div>'; }
+}
+
+function mensajeCliente(n){
+  return "¡Hola! Ya está listo tu panel de "+n.nombre+" 🙌\n\nEntrá acá: "+PANEL+"\nTu clave: "+n.clave_panel+"\n\nAhí ves tus pedidos, tus charlas y tus números. Guardá la clave, es solo para vos.";
+}
+function compartir(n){
+  $("#rTitulo").textContent = "Pasale el acceso a "+n.nombre;
+  $("#rCuerpo").innerHTML = '<div class="listo" style="white-space:pre-wrap">'+esc(mensajeCliente(n))+'</div>'
+    + '<button class="btn-main" id="copiar">Copiar mensaje</button>';
+  abrir("mRes");
+  $("#copiar").onclick = () => copiar(mensajeCliente(n));
+}
+async function copiar(t){
+  try{ await navigator.clipboard.writeText(t); toast("Copiado ✅"); }
+  catch(e){ const a=document.createElement("textarea"); a.value=t; document.body.appendChild(a); a.select(); try{document.execCommand("copy"); toast("Copiado ✅");}catch(_){ toast("No pude copiar: copialo a mano"); } a.remove(); }
+}
+
+// ---- formulario ----
+$("#nuevo").onclick = () => abrirForm(null);
+function abrirForm(n){
+  EDIT = n;
+  $("#fTitulo").textContent = n ? "Editar · "+n.nombre : "Nuevo negocio";
+  $("#fErr").textContent = ""; $("#tokInfo").innerHTML = ""; $("#paginas").innerHTML = ""; $("#f-user_token").value = "";
+  CAMPOS.forEach(k => {
+    const el = $("#f-"+k); if(!el) return;
+    let v = n ? n[k] : "";
+    if(SECRETOS.includes(k)){ el.placeholder = (n && n["tiene_"+k]) ? n[k]+" (vacío = no se cambia)" : el.dataset.ph || el.placeholder; v = ""; }
+    if(k==="fotos") v = (n && n.fotos || []).join("\n");
+    el.value = v==null ? "" : v;
+  });
+  if(!n) $("#f-vendedor").value = "Fer";
+  abrir("mForm"); setTimeout(() => $("#f-nombre").focus(), 80);
+}
+document.querySelectorAll(".modal input[placeholder]").forEach(el => el.dataset.ph = el.placeholder);
+
+$("#genClave").onclick = () => {
+  const letras = "abcdefghjkmnpqrstuvwxyz23456789"; const a = new Uint32Array(10); crypto.getRandomValues(a);
+  $("#f-clave_panel").value = Array.from(a, x => letras[x % letras.length]).join("");
+};
+
+$("#validar").onclick = async () => {
+  const tok = $("#f-page_token").value.trim();
+  if(!tok && !EDIT){ $("#tokInfo").innerHTML = '<div class="info mal">Pegá primero el token de la página.</div>'; return; }
+  $("#tokInfo").innerHTML = '<div class="info">Preguntándole a Meta…</div>';
+  try{
+    const r = await post("/api/admin/validar-token", tok ? {page_token: tok} : {id: EDIT.id});
+    if(!r.ok){ $("#tokInfo").innerHTML = '<div class="info mal">'+esc(r.error)+'</div>'; return; }
+    if(!$("#f-nombre").value.trim()) $("#f-nombre").value = r.nombre;
+    $("#tokInfo").innerHTML = '<div class="info ok">✅ Es de la página <b>'+esc(r.nombre)+'</b> ('+esc(r.page_id)+')'
+      + (r.vence ? '<br>Vence: <b>'+esc(r.vence)+'</b>' : '')
+      + (r.avisos||[]).map(a => '<div class="warn">⚠️ '+esc(a)+'</div>').join("") + '</div>';
+  }catch(e){ $("#tokInfo").innerHTML = '<div class="info mal">No pude conectar con el bot.</div>'; }
+};
+
+$("#buscarPag").onclick = async () => {
+  const tok = $("#f-user_token").value.trim();
+  if(!tok){ $("#paginas").innerHTML = '<div class="info mal">Pegá el token que te da el Graph API Explorer.</div>'; return; }
+  $("#paginas").innerHTML = '<div class="info">Buscando tus páginas…</div>';
+  try{
+    const r = await post("/api/admin/paginas", {user_token: tok});
+    if(!r.ok){ $("#paginas").innerHTML = '<div class="info mal">'+esc(r.error)+'</div>'; return; }
+    if(!r.paginas.length){ $("#paginas").innerHTML = '<div class="info mal">Ese token no maneja ninguna página. ¿Le diste permiso a la página al generarlo?</div>'; return; }
+    window._PAGS = r.paginas;
+    $("#paginas").innerHTML = (r.aviso ? '<div class="info"><div class="warn">⚠️ '+esc(r.aviso)+'</div></div>' : '')
+      + r.paginas.map((p,i) => '<button type="button" class="pag-op" data-i="'+i+'">'+esc(p.nombre)+'<small>id '+esc(p.page_id)+' · tocá para usarla</small></button>').join("");
+    document.querySelectorAll(".pag-op").forEach(b => b.onclick = () => {
+      const p = window._PAGS[+b.dataset.i];
+      $("#f-page_token").value = p.page_token;
+      if(!$("#f-nombre").value.trim()) $("#f-nombre").value = p.nombre;
+      $("#paginas").innerHTML = ""; $("#f-user_token").value = "";
+      $("#tokInfo").innerHTML = '<div class="info ok">✅ Elegiste <b>'+esc(p.nombre)+'</b>'+(r.no_vencen?' · su token no vence':'')+'. Guardá y después tocá «Conectar página».</div>';
+    });
+  }catch(e){ $("#paginas").innerHTML = '<div class="info mal">No pude conectar con el bot.</div>'; }
+};
+
+$("#guardar").onclick = async () => {
+  const body = {};
+  CAMPOS.forEach(k => { const el = $("#f-"+k); if(el) body[k] = el.value; });
+  if(EDIT) body.id = EDIT.id;
+  if(!body.nombre.trim()){ $("#fErr").textContent = "Poné el nombre del negocio."; return; }
+  if(body.clave_panel.trim().length < 8){ $("#fErr").textContent = "La clave del panel tiene que tener 8 letras o más (tocá «Inventar»)."; return; }
+  const btn = $("#guardar"); btn.disabled = true; btn.textContent = "Guardando…"; $("#fErr").textContent = "";
+  try{
+    const r = await post("/api/admin/negocio", body);
+    if(!r.ok){ $("#fErr").textContent = r.error || "No se pudo guardar"; return; }
+    cerrar("mForm"); await recargar();
+    const n = r.negocio;
+    $("#rTitulo").textContent = (EDIT ? "Guardado · " : "¡Listo! · ") + n.nombre;
+    $("#rCuerpo").innerHTML = '<div class="listo">Clave del panel: <code>'+esc(n.clave_panel)+'</code><br><br>'
+      + (n.estado==="sin_conectar" ? "Falta la página de Facebook: cuando la tengas, editalo y pegá su token." : "Siguiente paso: tocá <b>«Conectar página»</b> en su tarjeta para que Meta le mande los mensajes al bot.")
+      + '</div><button class="btn-main" id="copiarAcc">Copiar mensaje para el cliente</button>';
+    abrir("mRes");
+    $("#copiarAcc").onclick = () => copiar(mensajeCliente(n));
+  }catch(e){ if(e.message==="401") location.reload(); else $("#fErr").textContent = "No pude conectar con el bot. Probá de nuevo."; }
+  finally{ btn.disabled = false; btn.textContent = "Guardar"; }
+};
+</script>
+</body>
+</html>
