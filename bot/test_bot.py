@@ -119,6 +119,12 @@ check("Guaranístore averigua sola el id de su página", bot._PAGINA_PRINCIPAL["
 check("Guaranístore sigue usando su memoria de siempre (hist:<cliente>)", "hist:900" in FAKE.redis)
 
 
+texto_novva = open(os.path.join(AQUI, "..", "prompt-novva.txt"), encoding="utf-8").read()
+novva = bot.Negocio({"id": "novva", "nombre": "Novva", "prompt": texto_novva, "envio_interior": 0})
+check("El vendedor de Novva usa su texto, suma las etiquetas de pedido y puede decir que es un asistente",
+      novva.system_prompt.startswith(texto_novva.strip()) and "[PEDIDO] Producto:" in novva.system_prompt
+      and "Nunca digas que sos una IA" not in novva.system_prompt and novva.envio_interior == 0)
+
 # ============================================================
 print("\n== 2. Admin: cargar negocios ==")
 # ============================================================

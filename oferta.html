@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Novva · Vendedor para tu Facebook</title>
+<meta name="description" content="Novva contesta los mensajes de tu página de Facebook con tu catálogo real, toma los pedidos y te los avisa al celular." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#0A0E1A; --bg2:#0F1424; --card:#151B30; --line:#262E48; --ink:#EDF0FA; --muted:#A3ABC6;
+         --cyan:#4C8DFF; --violet:#9B7DFF; --amber:#E0A94A; --green:#34D399; --rose:#F58BB0; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg); color:var(--ink); font-family:"Inter",system-ui,sans-serif; -webkit-font-smoothing:antialiased; line-height:1.6; font-size:16px;
+    background-image:radial-gradient(90% 40% at 15% 0%, rgba(76,141,255,.16), transparent 60%), radial-gradient(70% 35% at 90% 2%, rgba(155,125,255,.14), transparent 55%)}
+  .wrap{max-width:1040px; margin:0 auto; padding:0 16px}
+  h1,h2,h3,.brand{font-family:"Fraunces",Georgia,serif}
+  a{color:inherit}
+  .grad{background:linear-gradient(120deg,var(--cyan),var(--violet)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
+
+  .top{display:flex; align-items:center; justify-content:space-between; padding:20px 0}
+  .brand{font-weight:700; font-size:25px; text-decoration:none}
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:14px 22px; border-radius:14px; font-weight:700; font-size:15.5px; text-decoration:none; border:none; cursor:pointer; transition:transform .12s ease}
+  .btn:active{transform:scale(.97)}
+  .btn-main{background:linear-gradient(120deg,var(--cyan),#2563EB); color:#02101F; box-shadow:0 6px 20px rgba(76,141,255,.28)}
+  .btn-sec{background:var(--card); color:var(--ink); border:1px solid var(--line)}
+  .btn-chico{padding:10px 16px; font-size:14px}
+
+  .hero{display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center; padding:36px 0 56px}
+  .eyebrow{display:inline-block; font-size:12.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--cyan); background:rgba(76,141,255,.12); border-radius:20px; padding:5px 12px}
+  .hero h1{font-size:clamp(34px,6vw,54px); line-height:1.08; letter-spacing:-.02em; margin:16px 0 16px}
+  .hero p{color:var(--muted); font-size:18px; max-width:520px}
+  .ctas{display:flex; gap:10px; flex-wrap:wrap; margin-top:26px}
+
+  .chat{background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--line); border-radius:24px; padding:18px; box-shadow:0 24px 60px rgba(0,0,0,.4)}
+  .chat .cab{display:flex; align-items:center; gap:10px; padding-bottom:12px; border-bottom:1px solid var(--line); margin-bottom:12px}
+  .chat .av{width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--amber),var(--rose)); flex:0 0 auto}
+  .chat .cab b{font-size:14.5px}
+  .chat .cab small{display:block; color:var(--green); font-size:12px}
+  .bub{max-width:84%; padding:10px 13px; border-radius:16px; font-size:14.5px; margin:8px 0; line-height:1.45}
+  .bub.cli{background:var(--bg); border:1px solid var(--line); border-bottom-left-radius:5px}
+  .bub.bot{margin-left:auto; background:linear-gradient(120deg,var(--cyan),#2563EB); color:#02101F; border-bottom-right-radius:5px}
+  .chat .nota{text-align:center; color:var(--muted); font-size:12px; margin-top:10px}
+
+  section{padding:56px 0}
+  .sec-tit{font-size:clamp(28px,4.4vw,38px); line-height:1.15; letter-spacing:-.01em; margin-bottom:10px}
+  .sec-bajada{color:var(--muted); font-size:17px; max-width:620px; margin-bottom:30px}
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+  .item{background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--line); border-radius:18px; padding:20px}
+  .item .ic{font-size:24px}
+  .item h3{font-size:19px; margin:10px 0 6px}
+  .item p{color:var(--muted); font-size:15px}
+
+  .panel{display:grid; grid-template-columns:1fr 1fr; gap:36px; align-items:center}
+  .lista{list-style:none}
+  .lista li{display:flex; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); color:var(--muted)}
+  .lista li b{color:var(--ink)}
+  .lista li::before{content:"✓"; color:var(--green); font-weight:700}
+  .mini-stats{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .stat{border:1px solid var(--line); border-radius:16px; padding:16px; background:linear-gradient(158deg,var(--card),var(--bg2))}
+  .stat .n{font-family:"Fraunces"; font-size:22px; font-weight:700}
+  .stat .l{color:var(--muted); font-size:13px}
+
+  .pasos{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; counter-reset:paso}
+  .paso{border:1px solid var(--line); border-radius:18px; padding:22px; background:var(--bg2); position:relative}
+  .paso::before{counter-increment:paso; content:counter(paso); display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:11px; font-weight:700; color:#02101F; background:linear-gradient(135deg,var(--cyan),var(--violet)); margin-bottom:12px}
+  .paso h3{font-size:19px; margin-bottom:6px}
+  .paso p{color:var(--muted); font-size:15px}
+
+  .honesto{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  .col{border-radius:18px; padding:22px; border:1px solid var(--line); background:var(--card)}
+  .col h3{font-size:20px; margin-bottom:10px}
+  .col ul{list-style:none}
+  .col li{padding:8px 0; color:var(--muted); display:flex; gap:10px}
+  .col.si li::before{content:"✓"; color:var(--green); font-weight:700}
+  .col.no li::before{content:"✕"; color:var(--rose); font-weight:700}
+
+  .precios{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px}
+  .plan{border:1px solid var(--line); border-radius:20px; padding:24px; background:linear-gradient(180deg,var(--card),var(--bg2)); display:flex; flex-direction:column}
+  .plan.dest{border-color:rgba(76,141,255,.6); box-shadow:0 0 0 2px rgba(76,141,255,.18)}
+  .plan h3{font-size:21px}
+  .plan .precio{font-family:"Fraunces"; font-size:32px; font-weight:700; margin:10px 0 2px}
+  .plan .per{color:var(--muted); font-size:14px; margin-bottom:14px}
+  .plan ul{list-style:none; flex:1}
+  .plan li{padding:6px 0; color:var(--muted); font-size:15px; display:flex; gap:10px}
+  .plan li::before{content:"✓"; color:var(--green); font-weight:700}
+  .plan .btn{margin-top:18px}
+
+  .faq details{border-bottom:1px solid var(--line); padding:16px 0}
+  .faq summary{cursor:pointer; font-weight:600; font-size:16.5px; list-style:none; display:flex; justify-content:space-between; gap:12px}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:"+"; color:var(--cyan); font-size:22px; line-height:1}
+  .faq details[open] summary::after{content:"–"}
+  .faq p{color:var(--muted); margin-top:10px}
+
+  .contacto{text-align:center; border:1px solid var(--line); border-radius:26px; padding:44px 20px; background:radial-gradient(80% 120% at 50% 0%, rgba(76,141,255,.16), transparent 70%), var(--bg2)}
+  .contacto .ctas{justify-content:center}
+  .falta{display:inline-block; background:rgba(224,169,74,.18); color:var(--amber); border-radius:10px; padding:10px 14px; font-weight:600; margin-top:18px}
+
+  footer{padding:36px 0 44px; color:var(--muted); font-size:14px; display:flex; gap:20px; flex-wrap:wrap; justify-content:space-between}
+  footer nav{display:flex; gap:18px; flex-wrap:wrap}
+
+  @media (max-width:820px){
+    .hero, .panel{grid-template-columns:1fr}
+    .grid, .pasos{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:560px){
+    .grid, .pasos, .honesto{grid-template-columns:1fr}
+    .hero{padding-top:18px}
+    .hero p{font-size:17px}
+    section{padding:44px 0}
+    .ctas .btn{flex:1 1 100%}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="brand grad" href="#">Novva</a>
+    <a class="btn btn-sec btn-chico" href="#contacto">Escribinos</a>
+  </div>
+
+  <div class="hero">
+    <div>
+      <span class="eyebrow">Vendedor para tu Facebook</span>
+      <h1>Tu página contesta <span class="grad">sola</span>, de día y de noche</h1>
+      <p>Novva atiende los mensajes de tu página de Facebook con tus precios reales, toma los pedidos y te los avisa al celular. Vos te ocupás de entregar.</p>
+      <div class="ctas">
+        <a class="btn btn-main" href="#contacto">Quiero probarlo</a>
+        <a class="btn btn-sec" href="#como">Cómo funciona</a>
+      </div>
+    </div>
+    <div class="chat" aria-label="Ejemplo de charla">
+      <div class="cab"><div class="av"></div><div><b>Tu negocio</b><small>● Responde al instante</small></div></div>
+      <div class="bub cli">Hola, ¿cuánto sale la crema?</div>
+      <div class="bub bot">¡Hola! 😊 Sale Gs. 100.000 y pagás recién cuando te llega. ¿De qué ciudad sos?</div>
+      <div class="bub cli">De Luque</div>
+      <div class="bub bot">¡Perfecto, a Luque el envío no tiene costo! ¿Te la reservo para hoy o para mañana?</div>
+      <div class="nota">Charla de ejemplo</div>
+    </div>
+  </div>
+</div>
+
+<section id="como">
+  <div class="wrap">
+    <h2 class="sec-tit">Qué hace por vos</h2>
+    <p class="sec-bajada">Un asistente con inteligencia artificial que conoce tu catálogo y vende con tu forma de vender.</p>
+    <div class="grid">
+      <div class="item"><div class="ic">💬</div><h3>Contesta al instante</h3><p>Cada mensaje de Messenger tiene respuesta en segundos, también a la noche y los domingos.</p></div>
+      <div class="item"><div class="ic">🏷️</div><h3>Usa tus precios reales</h3><p>Lee el precio y el stock de tu catálogo. Si algo está agotado, no lo vende.</p></div>
+      <div class="item"><div class="ic">📸</div><h3>Manda fotos y video</h3><p>Cuando el cliente quiere ver el producto, le manda tus fotos y tu video.</p></div>
+      <div class="item"><div class="ic">🛍️</div><h3>Toma el pedido</h3><p>Pide nombre, ciudad, teléfono y dirección, y suma el envío al interior.</p></div>
+      <div class="item"><div class="ic">🔔</div><h3>Te avisa al celular</h3><p>Cada pedido nuevo te llega por Telegram con todos los datos.</p></div>
+      <div class="item"><div class="ic">🧾</div><h3>Lee comprobantes</h3><p>Si te mandan una transferencia, lee el monto y te deja el pedido listo para verificar.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap panel">
+    <div>
+      <h2 class="sec-tit">Todo tu negocio en un panel</h2>
+      <p class="sec-bajada">Entrás desde el celu con tu clave y ves solo lo tuyo.</p>
+      <ul class="lista">
+        <li><span><b>Pedidos</b> nuevos, por cobrar y entregados.</span></li>
+        <li><span><b>Charlas</b>: leé cómo atendió a cada cliente.</span></li>
+        <li><span><b>Ganancia real</b> por producto, cargando tu costo.</span></li>
+        <li><span><b>Ventas por mes</b>, para ver cómo venís.</span></li>
+        <li><span><b>Clientes que preguntaron y no compraron</b>, con un mensaje listo para recuperarlos.</span></li>
+        <li><span><b>Modo dueño</b>: preguntale a tu asistente cómo van las ventas.</span></li>
+      </ul>
+    </div>
+    <div class="mini-stats" aria-hidden="true">
+      <div class="stat"><div class="n grad">Pedidos</div><div class="l">del día y del mes</div></div>
+      <div class="stat"><div class="n grad">Por cobrar</div><div class="l">con días de espera</div></div>
+      <div class="stat"><div class="n grad">Ganancia</div><div class="l">precio menos costo</div></div>
+      <div class="stat"><div class="n grad">Charlas</div><div class="l">todas, para revisar</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec-tit">Cómo empezamos</h2>
+    <p class="sec-bajada">No necesitás saber de tecnología.</p>
+    <div class="pasos">
+      <div class="paso"><h3>Nos contás tu negocio</h3><p>Tus productos, precios, envíos y cómo te gusta atender.</p></div>
+      <div class="paso"><h3>Conectamos tu página</h3><p>Vos das el permiso desde Facebook. Tu clave de Facebook no la vemos nunca.</p></div>
+      <div class="paso"><h3>Empieza a atender</h3><p>Recibís tu panel y tu clave. Desde ahí ves cada charla y cada pedido.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec-tit">Te hablamos claro</h2>
+    <p class="sec-bajada">Preferimos que sepas qué esperar.</p>
+    <div class="honesto">
+      <div class="col si"><h3>Lo que sí</h3><ul>
+        <li>Contesta en segundos, a cualquier hora.</li>
+        <li>No se olvida de ningún mensaje.</li>
+        <li>No inventa precios: usa tu catálogo.</li>
+        <li>Ves todas las charlas en tu panel.</li>
+      </ul></div>
+      <div class="col no"><h3>Lo que no</h3><ul>
+        <li>No te prometemos una cantidad de ventas: eso depende de tu producto, tus precios y tus anuncios.</li>
+        <li>No es perfecto: puede equivocarse, por eso los pagos los confirmás vos.</li>
+        <li>Por ahora atiende Facebook Messenger, no WhatsApp ni Instagram.</li>
+      </ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="precios">
+  <div class="wrap">
+    <h2 class="sec-tit">Precios</h2>
+    <p class="sec-bajada">Lo que incluye, para que compares tranquilo.</p>
+    <div class="precios" id="planes"></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap faq">
+    <h2 class="sec-tit">Preguntas frecuentes</h2>
+    <details><summary>¿Mis clientes van a saber que es un asistente automático?</summary><p>Es un asistente con inteligencia artificial. Atiende con el nombre y el estilo que elijas, y vos decidís cómo se presenta.</p></details>
+    <details><summary>¿Qué pasa si no sabe algo?</summary><p>No inventa: solo usa los datos de tu catálogo. Lo que no sabe, no lo promete, y vos ves la charla en tu panel.</p></details>
+    <details><summary>¿Necesito una computadora?</summary><p>No. El panel está hecho para el celular.</p></details>
+    <details><summary>¿Puedo pausarlo?</summary><p>Sí. Nos avisás y deja de contestar al instante. Para volver, lo mismo.</p></details>
+    <details><summary>¿Qué pasa con los datos de mis clientes?</summary><p>Son tuyos. Cada negocio ve solo lo suyo y no los usamos para nada más. Tus clientes pueden borrar sus datos escribiendo «borrar mis datos». Más en nuestra <a href="privacidad.html">política de privacidad</a>.</p></details>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="contacto" id="contacto">
+    <h2 class="sec-tit">¿Lo probamos en tu página?</h2>
+    <p class="sec-bajada" style="margin:0 auto">Escribinos y lo dejamos andando con tu catálogo.</p>
+    <div class="ctas" id="botonesContacto"></div>
+  </div>
+  <footer>
+    <span>© 2026 Novva</span>
+    <nav><a href="privacidad.html">Privacidad</a><a href="borrar-datos.html">Borrar mis datos</a></nav>
+  </footer>
+</div>
+
+<script>
+// ============================================================
+//  👇 COMPLETÁ ACÁ TUS PRECIOS Y TU CONTACTO
+//  - precio: el número en guaraníes, ej "150.000". Vacío = "Consultanos".
+//  - destacado: true marca ese plan como el recomendado.
+//  - whatsapp: tu número con 595 adelante, sin espacios (ej "595981123456").
+//  - messenger: el usuario de tu página Novva (lo que va después de facebook.com/).
+// ============================================================
+const PLANES = [
+  { nombre: "Novva", precio: "", periodo: "por mes", destacado: true,
+    incluye: ["Atiende tu página de Facebook", "Tu catálogo con precios y stock", "Pedidos y avisos por Telegram", "Panel en el celu"] },
+];
+const CONTACTO = { whatsapp: "", messenger: "", correo: "" };
+
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+const enlaceContacto = CONTACTO.whatsapp ? "https://wa.me/" + encodeURIComponent(CONTACTO.whatsapp) + "?text=" + encodeURIComponent("Hola, quiero saber más de Novva")
+                     : CONTACTO.messenger ? "https://m.me/" + encodeURIComponent(CONTACTO.messenger)
+                     : CONTACTO.correo ? "mailto:" + CONTACTO.correo : "#contacto";
+document.getElementById("planes").innerHTML = PLANES.map(function(p){
+  return '<div class="plan' + (p.destacado ? ' dest' : '') + '"><h3>' + esc(p.nombre) + '</h3>'
+    + '<div class="precio">' + (p.precio ? 'Gs. ' + esc(p.precio) : 'Consultanos') + '</div>'
+    + '<div class="per">' + (p.precio ? esc(p.periodo) : 'según el tamaño de tu negocio') + '</div>'
+    + '<ul>' + p.incluye.map(function(i){ return '<li>' + esc(i) + '</li>'; }).join("") + '</ul>'
+    + '<a class="btn ' + (p.destacado ? 'btn-main' : 'btn-sec') + '" href="' + esc(enlaceContacto) + '">Quiero este</a></div>';
+}).join("");
+const botones = [];
+if (CONTACTO.whatsapp) botones.push('<a class="btn btn-main" href="' + esc("https://wa.me/" + encodeURIComponent(CONTACTO.whatsapp) + "?text=" + encodeURIComponent("Hola, quiero saber más de Novva")) + '">Escribir por WhatsApp</a>');
+if (CONTACTO.messenger) botones.push('<a class="btn ' + (botones.length ? 'btn-sec' : 'btn-main') + '" href="' + esc("https://m.me/" + encodeURIComponent(CONTACTO.messenger)) + '">Escribir por Messenger</a>');
+if (CONTACTO.correo) botones.push('<a class="btn btn-sec" href="mailto:' + esc(CONTACTO.correo) + '">' + esc(CONTACTO.correo) + '</a>');
+document.getElementById("botonesContacto").innerHTML = botones.length ? botones.join("")
+  : '<div class="falta">Falta cargar tu WhatsApp, Messenger o correo (arriba de todo en el código)</div>';
+</script>
+</body>
+</html>

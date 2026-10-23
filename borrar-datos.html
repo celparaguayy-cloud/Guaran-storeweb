@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Novva · Borrar mis datos</title>
+<meta name="description" content="Cómo borrar los datos que guardó el asistente de Novva cuando le escribiste a una página de Facebook." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#0A0E1A; --bg2:#0F1424; --card:#151B30; --line:#262E48; --ink:#EDF0FA; --muted:#A3ABC6; --cyan:#4C8DFF; --violet:#9B7DFF; --amber:#E0A94A; --green:#34D399; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg); color:var(--ink); font-family:"Inter",system-ui,sans-serif; -webkit-font-smoothing:antialiased; line-height:1.7; font-size:16px;
+    background-image:radial-gradient(90% 40% at 15% 0%, rgba(76,141,255,.12), transparent 60%)}
+  .wrap{max-width:720px; margin:0 auto; padding:0 16px}
+  header{padding:28px 0 8px}
+  .brand{font-family:"Fraunces",Georgia,serif; font-weight:700; font-size:24px; background:linear-gradient(120deg,var(--cyan),var(--violet)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; text-decoration:none}
+  h1{font-family:"Fraunces",Georgia,serif; font-size:34px; line-height:1.2; margin:26px 0 8px; letter-spacing:-.01em}
+  .bajada{color:var(--muted); font-size:17px}
+  h2{font-family:"Fraunces",Georgia,serif; font-size:22px; margin:36px 0 10px}
+  p, li{color:var(--muted)}
+  p + p{margin-top:12px}
+  ul, ol{padding-left:22px; margin-top:8px}
+  li{margin:6px 0}
+  b{color:var(--ink); font-weight:600}
+  a{color:var(--cyan)}
+  .opcion{background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--line); border-radius:18px; padding:20px; margin-top:22px}
+  .opcion .tag{font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--cyan)}
+  .opcion h3{font-family:"Fraunces",Georgia,serif; font-size:21px; margin:4px 0 8px}
+  .frase{display:inline-block; margin:6px 0 2px; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:8px 14px; font-weight:700; color:var(--ink); font-size:17px}
+  .ok{color:var(--green)}
+  .falta{background:rgba(224,169,74,.18); color:var(--amber); border-radius:6px; padding:1px 6px; font-weight:600}
+  footer{margin:48px 0 40px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:14px; display:flex; gap:18px; flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><a class="brand" href="oferta.html">Novva</a></header>
+
+  <h1>Cómo borrar tus datos</h1>
+  <p class="bajada">Si le escribiste a una página de Facebook que usa el asistente de Novva, podés borrar lo que guardamos cuando quieras.</p>
+
+  <div class="opcion">
+    <div class="tag">La más rápida</div>
+    <h3>Escribilo en el chat</h3>
+    <ol>
+      <li>Abrí la charla de Messenger con la página a la que le escribiste.</li>
+      <li>Mandá este mensaje:<br><span class="frase">borrar mis datos</span></li>
+      <li>Al instante te contesta que <span class="ok">ya está borrado</span>.</li>
+    </ol>
+  </div>
+
+  <div class="opcion">
+    <div class="tag">Por correo</div>
+    <h3>Escribinos</h3>
+    <p>Mandá un correo a <span class="falta">[CORREO]</span> con el asunto <b>«Borrar mis datos»</b>. Contanos:</p>
+    <ul>
+      <li>A qué página de Facebook le escribiste.</li>
+      <li>El nombre de tu perfil de Facebook, para encontrar tu charla.</li>
+    </ul>
+    <p>Lo borramos y te confirmamos por correo en un plazo máximo de 30 días.</p>
+  </div>
+
+  <h2>Qué se borra</h2>
+  <ul>
+    <li><b>La charla guardada</b> con el asistente y su memoria.</li>
+    <li><b>Tu identificador de Messenger</b> en tus pedidos, así ya no quedan unidos a vos.</li>
+  </ul>
+
+  <h2>Qué queda</h2>
+  <ul>
+    <li><b>Los datos de un pedido que hiciste</b> (producto, total, nombre y dirección de entrega) pueden quedar en el negocio para la entrega o su contabilidad. Si querés que también los borre, pedíselo al negocio o escribinos y se lo pasamos.</li>
+    <li><b>La charla en tu Messenger</b> la guarda Facebook, no nosotros. Para borrarla, en Messenger tocá la charla y elegí «Eliminar».</li>
+  </ul>
+
+  <p style="margin-top:26px">Más información en nuestra <a href="privacidad.html">política de privacidad</a>.</p>
+
+  <footer>
+    <a href="oferta.html">Novva</a>
+    <a href="privacidad.html">Privacidad</a>
+    <span>Contacto: <span class="falta">[CORREO]</span></span>
+  </footer>
+</div>
+</body>
+</html>
