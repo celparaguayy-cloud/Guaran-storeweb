@@ -1754,7 +1754,7 @@ def _publico(n):
     if n.principal:
         d["clave_panel"] = _enmascarar(d.get("clave_panel", ""))
         d["clave_dueno"] = _enmascarar(d.get("clave_dueno", ""))
-        d["page_id"] = d.get("page_id") or _PAGINA_PRINCIPAL["id"]
+        d["page_id"] = d.get("page_id") or pagina_principal()
         d["prompt"] = ""
     d["principal"] = n.principal
     d["estado"] = "pausado" if not n.activo else ("activo" if n.conectado() or n.principal else "sin_conectar")
@@ -1825,15 +1825,18 @@ def admin_guardar(d: dict = Depends(_cuerpo), x_admin: str = Header(default=""))
         datos = dict(previo)
     else:
         datos = {"id": _id_libre(d.get("nombre", ""), {n.id for n in otros}), "creado": ahora(), "activo": True}
+    token_nuevo = False
     for k in CAMPOS_NEGOCIO:
-        if k in ("id", "creado", "activo") or k not in d: continue
+        if k in ("id", "creado", "activo", "page_id") or k not in d: continue
         v = d[k]
         # en los tokens, vacío (o el valor enmascarado ••••) = dejar el que ya estaba
         if k in SECRETOS and (str(v or "").strip() == "" or str(v).startswith("••••")): continue
+        if k == "page_token": token_nuevo = True
         datos[k] = v
     datos = _limpiar_negocio(datos)
 
-    if datos["page_token"] and not datos["page_id"]:
+    # el id de la página siempre sale del token (se lo pregunta a Meta), nunca se escribe a mano
+    if token_nuevo or (datos["page_token"] and not datos["page_id"]):
         info = _info_token(datos["page_token"])
         if not info.get("ok"): return {"ok": False, "error": info.get("error", "Token inválido")}
         datos["page_id"] = info["page_id"]
